@@ -1,0 +1,97 @@
+# =========================
+# Build directories
+# =========================
+build/
+bin/
+out/
+dist/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+
+# =========================
+# Executables / binaries
+# =========================
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# =========================
+# Object files
+# =========================
+*.o
+*.obj
+*.lo
+*.la
+*.al
+
+# =========================
+# Static / dynamic libs
+# =========================
+*.a
+*.lib
+
+# =========================
+# Debug / profiling
+# =========================
+*.dSYM/
+*.gcda
+*.gcno
+*.gcov
+gmon.out
+
+# =========================
+# IDE / Editor files
+# =========================
+
+# VSCode
+.vscode/
+
+# CLion / IntelliJ
+.idea/
+
+# Visual Studio
+*.vcxproj*
+*.sln
+*.user
+*.opensdf
+*.sdf
+*.ipch/
+
+# Vim / Emacs
+*.swp
+*~
+.#*
+
+# =========================
+# OS-specific files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# External dependencies
+# =========================
+external/
+
+# =========================
+# Temporary / cache
+# =========================
+.cache/
+.tmp/
+temp/
+
+# =========================
+# Coverage / testing
+# =========================
+coverage/
+*.prof
