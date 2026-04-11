@@ -1,13 +1,19 @@
+#ifndef __BDD_HPP
+#define __BDD_HPP
+
 #include "internal.hpp"
 #include "bddnode.hpp"
 
 class BDD {
     private:
         BDDNode* root = nullptr;
+        std::vector<BDDNode*>& unsatNodes;
 
     public:
-        BDD();
+        BDD(BDDNode* root, std::vector<BDDNode*>& unsatNodes);
         ~BDD();
-
-        std::vector<std::vector<int>>* generateWitnessClauses();
+        std::vector<std::vector<int>> generateWitnessClauses();
+        std::string toString() const;
 };
+
+#endif
