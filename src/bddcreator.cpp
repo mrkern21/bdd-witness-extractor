@@ -19,7 +19,7 @@ BDD BDDCreator::createBDD(void)
     layers[current_layer].push_back(root);
 
     // now create remaining layers
-    for (int i = current_layer; i < num_of_layers; i++)
+    for (int i = current_layer; i < num_of_layers - 1; i++)
     {
         int varNextLayer = varorder.front();
         for (BDDNode* node : layers[current_layer])
@@ -48,9 +48,9 @@ BDD BDDCreator::createBDD(void)
         }
 
         current_layer++;
+        varorder.pop(); 
     }
-    // remove nextLayerVar at the end
-    varorder.pop();
+
 
     return BDD(root, unsatNodes);
 }

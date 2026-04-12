@@ -8,6 +8,8 @@ class BDD {
     private:
         BDDNode* root = nullptr;
         std::vector<BDDNode*>& unsatNodes;
+        void traversePreOrder(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const;
+
 
     public:
         BDD(BDDNode* root, std::vector<BDDNode*>& unsatNodes);

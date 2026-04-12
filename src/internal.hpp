@@ -4,4 +4,5 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <unordered_set>
 #include "cadical.hpp"

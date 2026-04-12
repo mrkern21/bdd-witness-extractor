@@ -13,18 +13,28 @@ std::vector<std::vector<int>> BDD::generateWitnessClauses() {
     return result;
 }
 
+void BDD::traversePreOrder(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const {
+
+    if(node == nullptr) return;
+
+    if(visited.count(node) > 0) return;
+
+    visited.insert(node);
+
+    result += "var: " + std::to_string(node->getVar()) + " ";
+    result += "layer: " + std::to_string(node->getLayer());
+    result += "\n";
+
+    traversePreOrder(node->getLow(), result, visited);
+    traversePreOrder(node->getHigh(), result, visited);
+
+}
+
 std::string BDD::toString() const {
     std::string result;
+    std::unordered_set<const BDDNode*> visited;
 
-    int var = root->getVar();
-    int layer = root->getLayer();
-    
-    result.append("var: ");
-    result.append(std::to_string(var));
-    result.append(" layer: ");
-    result.append(std::to_string(layer));
-    result.append("\n");
-    
+    traversePreOrder(this->root, result, visited);
 
     return result;
 }

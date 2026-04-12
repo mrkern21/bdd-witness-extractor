@@ -44,3 +44,11 @@ bool BDDNode::isInfeasible() const {
 bool BDDNode::isUnsat() const {
     return this->unsat;
 }
+
+BDDNode* BDDNode::getHigh() const {
+    return this->high;
+}
+
+BDDNode* BDDNode::getLow() const {
+    return this->low;
+}

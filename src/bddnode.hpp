@@ -28,6 +28,8 @@ class BDDNode {
         int getLayer() const;
         bool isInfeasible() const;
         bool isUnsat() const;
+        BDDNode* getLow() const;
+        BDDNode* getHigh() const;
 };
 
 #endif
