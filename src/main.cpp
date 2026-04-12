@@ -22,9 +22,9 @@ int main(int argc, char* argv[]){
 
     BDDCreator creator(test_clauses, test_var_order);
 
-    BDD created_bdd = creator.createBDD();
+    BDD created_bdd = creator.create_bdd();
 
-    std::cout << created_bdd.toString() << std::endl;
+    std::cout << created_bdd.to_string() << std::endl;
 
     return 0;
 }

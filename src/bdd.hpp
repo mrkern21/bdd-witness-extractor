@@ -7,15 +7,15 @@
 class BDD {
     private:
         BDDNode* root = nullptr;
-        std::vector<BDDNode*>& unsatNodes;
-        void traversePreOrder(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const;
+        std::vector<BDDNode*>& unsat_nodes;
+        void traverse_pre_order(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const;
 
 
     public:
-        BDD(BDDNode* root, std::vector<BDDNode*>& unsatNodes);
+        BDD(BDDNode* root, std::vector<BDDNode*>& unsat_nodes);
         ~BDD();
-        std::vector<std::vector<int>> generateWitnessClauses();
-        std::string toString() const;
+        std::vector<std::vector<int>> generate_witness_clauses();
+        std::string to_string() const;
 };
 
 #endif

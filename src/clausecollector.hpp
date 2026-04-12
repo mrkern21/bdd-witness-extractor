@@ -10,7 +10,7 @@ class ClauseCollector : public CaDiCaL::ClauseIterator{
 
     public:
         bool clause (const std::vector<int> & cl) override;
-        const std::vector<std::vector<int>> retrieveClauses() const;
+        const std::vector<std::vector<int>> retrieve_clauses() const;
 };
 
 #endif

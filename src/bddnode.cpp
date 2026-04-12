@@ -1,7 +1,7 @@
 #include "bddnode.hpp"
 
-BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsatClauses)
- : unsatClauses(unsatClauses){
+BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsat_clauses)
+ : unsat_clauses(unsat_clauses){
     this->var = var;
     this->layer = layer;
     this->unsat = false;
@@ -13,42 +13,42 @@ BDDNode::~BDDNode(){
     delete this->high;
 }
 
-void BDDNode::setHigh(BDDNode* node){
+void BDDNode::set_high(BDDNode* node){
     this->high = node;
 }
 
-void BDDNode::setLow(BDDNode* node){
+void BDDNode::set_low(BDDNode* node){
     this->low = node;
 }
 
-void BDDNode::setParent(BDDNode* node){
+void BDDNode::set_parent(BDDNode* node){
     this->parent = node;
 }
 
-std::vector<std::vector<int>>& BDDNode::getUnsatClauses() const {
-    return this->unsatClauses;
+std::vector<std::vector<int>>& BDDNode::get_unsat_clauses() const {
+    return this->unsat_clauses;
 }
 
-int BDDNode::getVar() const {
+int BDDNode::get_var() const {
     return this->var;
 }
 
-int BDDNode::getLayer() const {
+int BDDNode::get_layer() const {
     return this->layer;
 }
 
-bool BDDNode::isInfeasible() const {
+bool BDDNode::is_infeasible() const {
     return this->infeasible;
 }
 
-bool BDDNode::isUnsat() const {
+bool BDDNode::is_unsat() const {
     return this->unsat;
 }
 
-BDDNode* BDDNode::getHigh() const {
+BDDNode* BDDNode::get_high() const {
     return this->high;
 }
 
-BDDNode* BDDNode::getLow() const {
+BDDNode* BDDNode::get_low() const {
     return this->low;
 }

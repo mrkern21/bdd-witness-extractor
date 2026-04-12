@@ -8,42 +8,42 @@ BDDCreator::BDDCreator(std::vector<std::vector<int>>& clauses,
 
 // notice that there are n layers in the BDD where 'n' is the number of distinct variables used in the given clauses
 // we obtain 'n' by the size of the 'varorder' list.
-BDD BDDCreator::createBDD(void)
+BDD BDDCreator::create_bdd(void)
 {
     int current_layer = 0;
     int current_var = varorder.front();
     varorder.pop();
 
-    std::vector<BDDNode*> unsatNodes;
+    std::vector<BDDNode*> unsat_nodes;
     BDDNode* root = new BDDNode(current_var, current_layer, this->clauses);
     layers[current_layer].push_back(root);
 
     // now create remaining layers
     for (int i = current_layer; i < num_of_layers - 1; i++)
     {
-        int varNextLayer = varorder.front();
+        int var_next_layer = varorder.front();
         int next_layer = current_layer + 1;
         for (BDDNode* node : layers[current_layer])
         {
-            if (node->isUnsat()) continue;
+            if (node->is_unsat()) continue;
             
             for (bool value : this->domain)
             {
-                std::vector<std::vector<int>> newState = computeNextState(current_var, value, node);
+                std::vector<std::vector<int>> newState = compute_next_state(current_var, value, node);
 
-                BDDNode* equivalentNode = obtainEquivalentNode(newState, next_layer);
+                BDDNode* equivalent_node = obtain_equivalent_node(newState, next_layer);
 
-                if (equivalentNode != nullptr)
+                if (equivalent_node != nullptr)
                 {
-                    if (value) node->setHigh(equivalentNode);
-                    else node->setLow(equivalentNode);
+                    if (value) node->set_high(equivalent_node);
+                    else node->set_low(equivalent_node);
                 }
                 else
                 {
-                    BDDNode* newNode = new BDDNode(varNextLayer, next_layer, newState);
-                    layers[next_layer].push_back(newNode);
-                    if (value) node->setHigh(newNode);
-                    else node->setLow(newNode);
+                    BDDNode* new_node = new BDDNode(var_next_layer, next_layer, newState);
+                    layers[next_layer].push_back(new_node);
+                    if (value) node->set_high(new_node);
+                    else node->set_low(new_node);
                 }
             }
         }
@@ -53,13 +53,13 @@ BDD BDDCreator::createBDD(void)
     }
 
 
-    return BDD(root, unsatNodes);
+    return BDD(root, unsat_nodes);
 }
 
-std::vector<std::vector<int>> BDDCreator::computeNextState(int var, bool value, BDDNode *currentNode)
+std::vector<std::vector<int>> BDDCreator::compute_next_state(int var, bool value, BDDNode* current_node)
 {
-    std::vector<std::vector<int>> newState;
-    for (const std::vector<int>& clause : currentNode->getUnsatClauses())
+    std::vector<std::vector<int>> new_state;
+    for (const std::vector<int>& clause : current_node->get_unsat_clauses())
     {
         bool satisfied = false;
 
@@ -74,23 +74,15 @@ std::vector<std::vector<int>> BDDCreator::computeNextState(int var, bool value, 
         }
         if (!satisfied)
         {
-            newState.push_back(clause);
+            new_state.push_back(clause);
         }
         satisfied = false;
     }
 
-    return newState;
+    return new_state;
 }
 
-BDDNode *BDDCreator::obtainEquivalentNode(std::vector<std::vector<int>> &currentState, int nextLayer)
+BDDNode *BDDCreator::obtain_equivalent_node(std::vector<std::vector<int>> &current_state, int next_layer)
 {
     return nullptr;
-}
-
-void BDDCreator::checkUnsat(void)
-{
-}
-
-void BDDCreator::checkInfeasible(void)
-{
 }

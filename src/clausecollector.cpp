@@ -5,6 +5,6 @@ bool ClauseCollector::clause(const std::vector<int> & cl){
     return true;
 }
 
-const std::vector<std::vector<int>> ClauseCollector::retrieveClauses() const {
+const std::vector<std::vector<int>> ClauseCollector::retrieve_clauses() const {
     return this->clauses;
 }

@@ -1,6 +1,6 @@
 #include "bdd.hpp"
 
-BDD::BDD(BDDNode* root, std::vector<BDDNode*>& unsatNodes) : unsatNodes(unsatNodes) {
+BDD::BDD(BDDNode* root, std::vector<BDDNode*>& unsat_nodes) : unsat_nodes(unsat_nodes) {
     this->root = root;
 }
 
@@ -8,12 +8,12 @@ BDD::~BDD() {
     delete this->root;
 }
 
-std::vector<std::vector<int>> BDD::generateWitnessClauses() {
+std::vector<std::vector<int>> BDD::generate_witness_clauses() {
     std::vector<std::vector<int>> result = {};
     return result;
 }
 
-void BDD::traversePreOrder(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const {
+void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const {
 
     if(node == nullptr) return;
 
@@ -21,20 +21,20 @@ void BDD::traversePreOrder(const BDDNode* node, std::string& result, std::unorde
 
     visited.insert(node);
 
-    result += "var: " + std::to_string(node->getVar()) + " ";
-    result += "layer: " + std::to_string(node->getLayer());
+    result += "var: " + std::to_string(node->get_var()) + " ";
+    result += "layer: " + std::to_string(node->get_layer());
     result += "\n";
 
-    traversePreOrder(node->getLow(), result, visited);
-    traversePreOrder(node->getHigh(), result, visited);
+    traverse_pre_order(node->get_low(), result, visited);
+    traverse_pre_order(node->get_high(), result, visited);
 
 }
 
-std::string BDD::toString() const {
+std::string BDD::to_string() const {
     std::string result;
     std::unordered_set<const BDDNode*> visited;
 
-    traversePreOrder(this->root, result, visited);
+    traverse_pre_order(this->root, result, visited);
 
     return result;
 }
