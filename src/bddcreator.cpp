@@ -22,6 +22,7 @@ BDD BDDCreator::createBDD(void)
     for (int i = current_layer; i < num_of_layers - 1; i++)
     {
         int varNextLayer = varorder.front();
+        int next_layer = current_layer + 1;
         for (BDDNode* node : layers[current_layer])
         {
             if (node->isUnsat()) continue;
@@ -30,7 +31,7 @@ BDD BDDCreator::createBDD(void)
             {
                 std::vector<std::vector<int>> newState = computeNextState(current_var, value, node);
 
-                BDDNode* equivalentNode = obtainEquivalentNode(newState, current_layer + 1);
+                BDDNode* equivalentNode = obtainEquivalentNode(newState, next_layer);
 
                 if (equivalentNode != nullptr)
                 {
@@ -39,8 +40,8 @@ BDD BDDCreator::createBDD(void)
                 }
                 else
                 {
-                    BDDNode* newNode = new BDDNode(varNextLayer, current_layer + 1, newState);
-                    layers[current_layer + 1].push_back(newNode);
+                    BDDNode* newNode = new BDDNode(varNextLayer, next_layer, newState);
+                    layers[next_layer].push_back(newNode);
                     if (value) node->setHigh(newNode);
                     else node->setLow(newNode);
                 }
