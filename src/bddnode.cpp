@@ -1,11 +1,11 @@
 #include "bddnode.hpp"
 
-BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsatClauses, std::vector<std::vector<int>>& partialAssignment)
- : unsatClauses(unsatClauses), partialAssignment(partialAssignment){
+BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsatClauses)
+ : unsatClauses(unsatClauses){
     this->var = var;
     this->layer = layer;
-    this->unsatClauses = unsatClauses;
-    this->partialAssignment = partialAssignment;
+    this->unsat = false;
+    this->infeasible = false;
 }
 
 BDDNode::~BDDNode(){

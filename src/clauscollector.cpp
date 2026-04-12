@@ -1,4 +1,4 @@
-/**#include "clausecollector.hpp"
+#include "clausecollector.hpp"
 
 bool ClauseCollector::clause(const std::vector<int> & cl){
     this->clauses.push_back(cl);
@@ -7,4 +7,4 @@ bool ClauseCollector::clause(const std::vector<int> & cl){
 
 const std::vector<std::vector<int>> ClauseCollector::retrieveClauses() const {
     return this->clauses;
-}**/
+}

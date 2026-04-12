@@ -4,4 +4,4 @@
 #include <string>
 #include <vector>
 #include <queue>
-//#include "cadical.hpp"
+#include "cadical.hpp"

@@ -4,13 +4,13 @@
 
 #include "internal.hpp"
 
-/**class ClauseCollector : public CaDiCaL::ClauseIterator{
+class ClauseCollector : public CaDiCaL::ClauseIterator{
     private:
         std::vector<std::vector<int>> clauses;
 
     public:
         bool clause (const std::vector<int> & cl) override;
         const std::vector<std::vector<int>> retrieveClauses() const;
-};**/
+};
 
 #endif

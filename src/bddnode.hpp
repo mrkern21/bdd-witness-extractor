@@ -10,15 +10,13 @@ class BDDNode {
         BDDNode* low = nullptr;
         BDDNode* high = nullptr;
         std::vector<std::vector<int>>& unsatClauses;
-        std::vector<std::vector<int>>& partialAssignment;
         int var;
         int layer;
         bool infeasible;
         bool unsat;
 
     public:
-        BDDNode(int var, int layer, std::vector<std::vector<int>>& unsatClauses,
-                std::vector<std::vector<int>>& partialAssignment);
+        BDDNode(int var, int layer, std::vector<std::vector<int>>& unsatClauses);
         ~BDDNode();
         
         void setLow(BDDNode* node);

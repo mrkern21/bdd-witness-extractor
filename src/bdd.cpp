@@ -2,7 +2,6 @@
 
 BDD::BDD(BDDNode* root, std::vector<BDDNode*>& unsatNodes) : unsatNodes(unsatNodes) {
     this->root = root;
-    this->unsatNodes = unsatNodes;
 }
 
 BDD::~BDD() {
