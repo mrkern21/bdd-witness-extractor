@@ -1,7 +1,7 @@
 #include "bddnode.hpp"
 
-BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsat_clauses)
- : unsat_clauses(unsat_clauses){
+BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses)
+ : unsat_clauses(std::move(unsat_clauses)){
     this->var = var;
     this->layer = layer;
     this->unsat = false;
@@ -9,8 +9,11 @@ BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>>& unsat_clause
 }
 
 BDDNode::~BDDNode(){
-    delete this->low;
-    delete this->high;
+    #ifdef DEBUG
+        std::cerr << "Deleting node " << this
+              << " var=" << var
+              << " layer=" << layer << "\n";
+    #endif
 }
 
 void BDDNode::set_high(BDDNode* node){
@@ -25,7 +28,7 @@ void BDDNode::set_parent(BDDNode* node){
     this->parent = node;
 }
 
-std::vector<std::vector<int>>& BDDNode::get_unsat_clauses() const {
+std::vector<std::vector<int>> BDDNode::get_unsat_clauses() const {
     return this->unsat_clauses;
 }
 
@@ -51,4 +54,20 @@ BDDNode* BDDNode::get_high() const {
 
 BDDNode* BDDNode::get_low() const {
     return this->low;
+}
+
+std::string BDDNode::get_state() const {
+    std::string result;
+
+    result += "{";
+    for(const std::vector<int>& clause : unsat_clauses){
+        result += "[";
+        for(int lit : clause){
+            result += std::to_string(lit) + " ";
+        }
+        result += "]";
+    }
+    result += "}";
+
+    return result;
 }
