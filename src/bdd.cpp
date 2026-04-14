@@ -1,6 +1,6 @@
 #include "bdd.hpp"
 
-BDD::BDD(BDDNode* root, std::vector<BDDNode*> unsat_nodes) : root(root), unsat_nodes(std::move(unsat_nodes)) 
+BDD::BDD(BDDNode* root, std::vector<std::vector<Working_Node>> layers) : root(root), layers(std::move(layers)) 
 {
 }
 
@@ -9,31 +9,19 @@ BDD::~BDD() {
     free_node(root, visited);
 }
 
-
-//TODO: Should this be removed?
-BDD::BDD(BDD&& other) noexcept
-    : root(other.root), unsat_nodes(std::move(other.unsat_nodes))
-{
-    other.root = nullptr;
-}
-
-BDD& BDD::operator=(BDD&& other) noexcept
-{
-    if (this != &other)
-    {
-        std::unordered_set<BDDNode*> visited;
-        free_node(root, visited);
-
-        root = other.root;
-        unsat_nodes = std::move(other.unsat_nodes);
-
-        other.root = nullptr;
-    }
-    return *this;
-}
-
-std::vector<std::vector<int>> BDD::generate_witness_clauses() {
+std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
     std::vector<std::vector<int>> result = {};
+    return result;
+}
+
+std::string BDD::to_string(void) const {
+    std::string result;
+    std::unordered_set<const BDDNode*> visited;
+
+    traverse_pre_order(this->root, result, visited);
+
+    result += "total number of nodes: " + std::to_string(visited.size()) + "\n";
+
     return result;
 }
 
@@ -45,33 +33,23 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
 
     visited.insert(node);
 
+    NodeStatus status = node->get_status();
     std::string var_string;
-    if(node->get_var() != -1){
-        var_string = std::to_string(node->get_var());
-    }else{
+    if(node->get_var() == -1 || status == NodeStatus::SAT || status == NodeStatus::UNSAT){
         var_string = "none";
+    }else{
+        var_string = std::to_string(node->get_var());
     }
     result += "var: " + var_string + ", ";
     result += "layer: " + std::to_string(node->get_layer()) + ", ";
     result += "state: " + node->get_state() + ", ";
-    result += "status: " + status_to_string(node->get_status()) + " ";
+    result += "status: " + status_to_string(status) + " ";
 
     result += "\n";
 
     traverse_pre_order(node->get_low(), result, visited);
     traverse_pre_order(node->get_high(), result, visited);
 
-}
-
-std::string BDD::to_string() const {
-    std::string result;
-    std::unordered_set<const BDDNode*> visited;
-
-    traverse_pre_order(this->root, result, visited);
-
-    result += "total number of nodes: " + std::to_string(visited.size()) + "\n";
-
-    return result;
 }
 
 void BDD::free_node(BDDNode* node, std::unordered_set<BDDNode*>& visited){

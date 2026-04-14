@@ -10,7 +10,7 @@ class BDDCreator {
         const bool domain[2] = {true, false};
         std::vector<std::vector<int>>& clauses;
         std::vector<int>& varorder;
-        std::vector<std::vector<PartialAssignment>> layers;
+        std::vector<std::vector<Working_Node>> layers;
         std::vector<std::unordered_map<std::string, BDDNode*>> state_table;
         std::unordered_map<int, int> var_to_layer;
         

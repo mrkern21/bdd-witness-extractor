@@ -22,7 +22,6 @@ BDD BDDCreator::create_bdd(void)
     std::vector<BDDNode*> unsat_nodes;
     this->clauses = normalize_state(this->clauses);
 
-    //TODO: think about status of the root node
     NodeStatus root_status = NodeStatus::DEFAULT;
     if(this->clauses.empty()){
         root_status = NodeStatus::SAT;
@@ -43,14 +42,14 @@ BDD BDDCreator::create_bdd(void)
         int next_layer = current_layer + 1;
         int var_next_layer = current_layer != (num_of_layers - 1) ? varorder[next_layer] : -1;
 
-        for (PartialAssignment& assignment : layers[current_layer])
+        for (const Working_Node& assignment : layers[current_layer])
         {
             BDDNode* node = assignment.node;
             NodeStatus current_status = node->get_status();
 
             if (current_status == NodeStatus::UNSAT || current_status == NodeStatus::SAT) continue;
             
-            for (bool value : this->domain)
+            for (const bool value : this->domain)
             {
                 std::unordered_map<int, int> new_assignment = assignment.assignment;
                 new_assignment[current_var] = value ? 1 : -1;
@@ -58,8 +57,6 @@ BDD BDDCreator::create_bdd(void)
                 NextState next_state = compute_next_state(current_var, value, node, new_assignment, next_layer);
                 next_state.state = normalize_state(next_state.state); 
                 std::string normalized_state_string = state_to_key(next_state.state);
-
-                //check if node is SAT, UNSAT, INFEASIBLE
 
                 BDDNode* equivalent_node = obtain_equivalent_node(next_state, next_layer);
 
@@ -85,7 +82,7 @@ BDD BDDCreator::create_bdd(void)
     }
 
 
-    return BDD(root, unsat_nodes);
+    return BDD(root, this->layers);
 }
 
 NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_node,
@@ -99,7 +96,7 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
         bool satisfied = false;
         bool has_unassigned_literal = false;
 
-        for (int literal : clause)
+        for (const int literal : clause)
         {
             int current_var = std::abs(literal);
 
@@ -141,7 +138,7 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
     for(std::vector<int>& clause : result.state){
         bool has_var_below_layer = false;
 
-        for(int lit : clause) {
+        for(const int lit : clause) {
             if(variable_below_layer(std::abs(lit), next_layer)){
                 has_var_below_layer = true;
                 break;
@@ -196,7 +193,7 @@ std::string BDDCreator::state_to_key(const std::vector<std::vector<int>>& state)
 
     for(const std::vector<int>& clause : state) {
         key += "[";
-        for(int lit : clause) {
+        for(const int lit : clause) {
             key += std::to_string(lit);
             key += " ";
         }

@@ -35,27 +35,27 @@ std::vector<std::vector<int>> BDDNode::get_unsat_clauses() const {
     return this->unsat_clauses;
 }
 
-int BDDNode::get_var() const {
+int BDDNode::get_var(void) const {
     return this->var;
 }
 
-int BDDNode::get_layer() const {
+int BDDNode::get_layer(void) const {
     return this->layer;
 }
 
-BDDNode* BDDNode::get_high() const {
+BDDNode* BDDNode::get_high(void) const {
     return this->high;
 }
 
-BDDNode* BDDNode::get_low() const {
+BDDNode* BDDNode::get_low(void) const {
     return this->low;
 }
 
-NodeStatus BDDNode::get_status() const {
+NodeStatus BDDNode::get_status(void) const {
     return this->status;
 }
 
-std::string BDDNode::get_state() const {
+std::string BDDNode::get_state(void) const {
     std::string result;
 
     result += "{";

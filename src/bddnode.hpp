@@ -25,12 +25,12 @@ class BDDNode {
         void set_status(NodeStatus status);
 
         std::vector<std::vector<int>> get_unsat_clauses() const;
-        int get_var() const;
-        int get_layer() const;
-        BDDNode* get_low() const;
-        BDDNode* get_high() const;
-        std::string get_state() const;
-        NodeStatus get_status() const;
+        int get_var(void) const;
+        int get_layer(void) const;
+        BDDNode* get_low(void) const;
+        BDDNode* get_high(void) const;
+        std::string get_state(void) const;
+        NodeStatus get_status(void) const;
 };
 
 #endif

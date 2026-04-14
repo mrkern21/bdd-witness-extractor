@@ -34,7 +34,7 @@ inline std::string status_to_string(NodeStatus status){
     }
 }
 
-struct PartialAssignment {
+struct Working_Node {
     BDDNode* node;
     std::unordered_map<int, int> assignment;
 };
