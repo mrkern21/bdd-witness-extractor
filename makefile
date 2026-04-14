@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -g -O2 -I./src -I./external/cadical/src
+CXXFLAGS := -std=c++17 -Wall -g -I./src -I./external/cadical/src
 LDFLAGS := -L./external/cadical/build
 LDLIBS := -lcadical
 
