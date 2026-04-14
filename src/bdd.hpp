@@ -3,6 +3,7 @@
 
 #include "internal.hpp"
 #include "bddnode.hpp"
+#include "util.hpp"
 
 class BDD {
     private:

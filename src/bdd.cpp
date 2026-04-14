@@ -47,7 +47,9 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
 
     result += "var: " + std::to_string(node->get_var()) + " ";
     result += "layer: " + std::to_string(node->get_layer()) + " ";
-    result += "state: " + node->get_state();
+    result += "state: " + node->get_state() + " ";
+    result += "status: " + status_to_string(node->get_status()) + " ";
+
     result += "\n";
 
     traverse_pre_order(node->get_low(), result, visited);
@@ -60,6 +62,8 @@ std::string BDD::to_string() const {
     std::unordered_set<const BDDNode*> visited;
 
     traverse_pre_order(this->root, result, visited);
+
+    result += "total number of nodes: " + std::to_string(visited.size()) + "\n";
 
     return result;
 }

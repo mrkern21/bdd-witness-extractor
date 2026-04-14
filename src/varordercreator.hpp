@@ -6,7 +6,7 @@
 class VarOrderCreator {
 
     public:
-        virtual std::queue<int>& create_var_order() = 0;
+        virtual std::vector<int>& create_var_order() = 0;
 };
 
 #endif

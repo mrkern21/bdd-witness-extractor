@@ -18,7 +18,9 @@ int main(int argc, char* argv[]){
         {-2,  3,  5}  // (11) ~x2 v x3 v x5
     };
 
-    std::queue<int> test_var_order({1,2,3,4,5});
+    std::vector<std::vector<int>> empty_clauses = {};
+
+    std::vector<int> test_var_order = {1,2,3,4,5};
 
     BDDCreator creator(test_clauses, test_var_order);
 

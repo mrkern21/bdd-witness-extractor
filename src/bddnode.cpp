@@ -1,11 +1,10 @@
 #include "bddnode.hpp"
 
-BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses)
+BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses, NodeStatus status)
  : unsat_clauses(std::move(unsat_clauses)){
     this->var = var;
     this->layer = layer;
-    this->unsat = false;
-    this->infeasible = false;
+    this->status = status;
 }
 
 BDDNode::~BDDNode(){
@@ -28,6 +27,10 @@ void BDDNode::set_parent(BDDNode* node){
     this->parent = node;
 }
 
+void BDDNode::set_status(NodeStatus status){
+    this->status = status;
+}
+
 std::vector<std::vector<int>> BDDNode::get_unsat_clauses() const {
     return this->unsat_clauses;
 }
@@ -40,20 +43,16 @@ int BDDNode::get_layer() const {
     return this->layer;
 }
 
-bool BDDNode::is_infeasible() const {
-    return this->infeasible;
-}
-
-bool BDDNode::is_unsat() const {
-    return this->unsat;
-}
-
 BDDNode* BDDNode::get_high() const {
     return this->high;
 }
 
 BDDNode* BDDNode::get_low() const {
     return this->low;
+}
+
+NodeStatus BDDNode::get_status() const {
+    return this->status;
 }
 
 std::string BDDNode::get_state() const {
@@ -65,6 +64,7 @@ std::string BDDNode::get_state() const {
         for(int lit : clause){
             result += std::to_string(lit) + " ";
         }
+        
         result += "]";
     }
     result += "}";
