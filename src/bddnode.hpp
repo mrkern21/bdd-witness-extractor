@@ -7,10 +7,10 @@
 class BDDNode {
 
     private:
-        BDDNode* parent = nullptr;
         BDDNode* low = nullptr;
         BDDNode* high = nullptr;
         std::vector<std::vector<int>> unsat_clauses;
+        std::vector<int> witness_clause;
         int var;
         int layer;
         NodeStatus status;
@@ -23,8 +23,10 @@ class BDDNode {
         void set_high(BDDNode* node);
         void set_parent(BDDNode* node);
         void set_status(NodeStatus status);
+        void set_witness_clause(std::vector<int> clause);
 
-        std::vector<std::vector<int>> get_unsat_clauses() const;
+        std::vector<std::vector<int>> get_unsat_clauses(void) const;
+        std::vector<int> get_witness_clause(void) const;
         int get_var(void) const;
         int get_layer(void) const;
         BDDNode* get_low(void) const;

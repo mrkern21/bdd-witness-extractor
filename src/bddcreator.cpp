@@ -28,12 +28,7 @@ BDD BDDCreator::create_bdd(void)
     }
     BDDNode* root = new BDDNode(current_var, current_layer, this->clauses, root_status);
 
-    std::unordered_map<int, int> root_assignment;
-    for(int layer = 0; layer < num_of_layers; layer++){
-        root_assignment[varorder[layer]] = 0;
-    }
-
-    layers[current_layer].push_back({root, root_assignment});
+    layers[current_layer].push_back(root);
     state_table[current_layer][state_to_key(this->clauses)] = root;
 
     // now create remaining layers
@@ -42,19 +37,16 @@ BDD BDDCreator::create_bdd(void)
         int next_layer = current_layer + 1;
         int var_next_layer = current_layer != (num_of_layers - 1) ? varorder[next_layer] : -1;
 
-        for (const Working_Node& assignment : layers[current_layer])
+        for (BDDNode* node : layers[current_layer])
         {
-            BDDNode* node = assignment.node;
             NodeStatus current_status = node->get_status();
 
             if (current_status == NodeStatus::UNSAT || current_status == NodeStatus::SAT) continue;
             
             for (const bool value : this->domain)
             {
-                std::unordered_map<int, int> new_assignment = assignment.assignment;
-                new_assignment[current_var] = value ? 1 : -1;
 
-                NextState next_state = compute_next_state(current_var, value, node, new_assignment, next_layer);
+                NextState next_state = compute_next_state(current_var, value, node, next_layer);
                 next_state.state = normalize_state(next_state.state); 
                 std::string normalized_state_string = state_to_key(next_state.state);
 
@@ -68,7 +60,7 @@ BDD BDDCreator::create_bdd(void)
                 else
                 {
                     BDDNode* new_node = new BDDNode(var_next_layer, next_layer, next_state.state, next_state.status);
-                    layers[next_layer].push_back({new_node, std::move(new_assignment)});
+                    layers[next_layer].push_back(new_node);
                     state_table[next_layer][normalized_state_string] = new_node;
 
                     if (value) node->set_high(new_node);
@@ -85,8 +77,7 @@ BDD BDDCreator::create_bdd(void)
     return BDD(root, this->layers);
 }
 
-NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_node,
-     std::unordered_map<int, int>& current_assignment, int next_layer)
+NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_node, int current_layer)
 {
     NextState result;
     result.status = NodeStatus::DEFAULT;
@@ -100,7 +91,7 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
         {
             int current_var = std::abs(literal);
 
-            if(current_assignment[current_var] == 0){
+            if(var_to_layer[current_var] >= current_layer){
                 has_unassigned_literal = true;
             }
             
@@ -139,7 +130,7 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
         bool has_var_below_layer = false;
 
         for(const int lit : clause) {
-            if(variable_below_layer(std::abs(lit), next_layer)){
+            if(variable_below_layer(std::abs(lit), current_layer)){
                 has_var_below_layer = true;
                 break;
             }

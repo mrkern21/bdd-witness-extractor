@@ -1,6 +1,6 @@
 #include "bdd.hpp"
 
-BDD::BDD(BDDNode* root, std::vector<std::vector<Working_Node>> layers) : root(root), layers(std::move(layers)) 
+BDD::BDD(BDDNode* root, std::vector<std::vector<BDDNode*>> layers) : root(root), layers(std::move(layers)) 
 {
 }
 

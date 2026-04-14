@@ -23,16 +23,16 @@ void BDDNode::set_low(BDDNode* node){
     this->low = node;
 }
 
-void BDDNode::set_parent(BDDNode* node){
-    this->parent = node;
-}
-
 void BDDNode::set_status(NodeStatus status){
     this->status = status;
 }
 
-std::vector<std::vector<int>> BDDNode::get_unsat_clauses() const {
+std::vector<std::vector<int>> BDDNode::get_unsat_clauses(void) const {
     return this->unsat_clauses;
+}
+
+std::vector<int> BDDNode::get_witness_clause(void) const {
+    return this->witness_clause;
 }
 
 int BDDNode::get_var(void) const {

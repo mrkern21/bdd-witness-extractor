@@ -42,7 +42,7 @@ int main(int argc, char* argv[]){
     std::vector<int> test_var_order_2 = {5,4,3,2,1};
     
 
-    BDDCreator creator(test_clauses, test_var_order_2);
+    BDDCreator creator(test_clauses, test_var_order);
 
     BDD created_bdd = creator.create_bdd();
 
