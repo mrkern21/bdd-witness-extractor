@@ -200,6 +200,7 @@ std::string BDDCreator::state_to_key(const std::vector<std::vector<int>>& state)
             key += std::to_string(lit);
             key += " ";
         }
+        key.pop_back();
         key += "]";
     }
 

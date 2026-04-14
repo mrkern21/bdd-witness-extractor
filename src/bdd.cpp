@@ -45,9 +45,15 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
 
     visited.insert(node);
 
-    result += "var: " + std::to_string(node->get_var()) + " ";
-    result += "layer: " + std::to_string(node->get_layer()) + " ";
-    result += "state: " + node->get_state() + " ";
+    std::string var_string;
+    if(node->get_var() != -1){
+        var_string = std::to_string(node->get_var());
+    }else{
+        var_string = "none";
+    }
+    result += "var: " + var_string + ", ";
+    result += "layer: " + std::to_string(node->get_layer()) + ", ";
+    result += "state: " + node->get_state() + ", ";
     result += "status: " + status_to_string(node->get_status()) + " ";
 
     result += "\n";

@@ -64,7 +64,7 @@ std::string BDDNode::get_state() const {
         for(int lit : clause){
             result += std::to_string(lit) + " ";
         }
-        
+        result.pop_back();
         result += "]";
     }
     result += "}";
