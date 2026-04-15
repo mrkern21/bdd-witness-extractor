@@ -5,8 +5,11 @@ BDD::BDD(BDDNode* root, std::vector<std::vector<BDDNode*>> layers) : root(root),
 }
 
 BDD::~BDD() {
-    std::unordered_set<BDDNode*> visited;
-    free_node(root, visited);
+    for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){
+        for(BDDNode* node : layers[current_layer]){
+            delete node;
+        }
+    }
 }
 
 std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
@@ -65,15 +68,4 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
     traverse_pre_order(node->get_low(), result, visited);
     traverse_pre_order(node->get_high(), result, visited);
 
-}
-
-void BDD::free_node(BDDNode* node, std::unordered_set<BDDNode*>& visited){
-    if(node == nullptr) return;
-    if(visited.count(node) > 0) return;
-    visited.insert(node);
-
-    free_node(node->get_low(), visited);
-    free_node(node->get_high(), visited);
-
-    delete node;
 }
