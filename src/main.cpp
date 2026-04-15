@@ -46,7 +46,10 @@ int main(int argc, char* argv[]){
 
     BDD created_bdd = creator.create_bdd();
 
-    std::cout << created_bdd.to_string() << std::endl;
+    //std::cout << created_bdd.to_string() << std::endl;
 
+    std::vector<std::vector<int>> witness_clauses = created_bdd.generate_witness_clauses();
+
+    
     return 0;
 }

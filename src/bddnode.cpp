@@ -1,10 +1,11 @@
 #include "bddnode.hpp"
 
-BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses, NodeStatus status)
- : unsat_clauses(std::move(unsat_clauses)){
+BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses, NodeStatus status, std::vector<int> witness_clause)
+ : unsat_clauses(std::move(unsat_clauses)), witness_clause(std::move(witness_clause)){
     this->var = var;
     this->layer = layer;
     this->status = status;
+    this->has_infeasible_parent = false;
 }
 
 BDDNode::~BDDNode(){
@@ -29,6 +30,10 @@ void BDDNode::set_status(NodeStatus status){
 
 void BDDNode::set_infeasible_parent(bool value){
     this->has_infeasible_parent = value;
+}
+
+void BDDNode::set_witness_clause(std::vector<int> witness_clause){
+    this->witness_clause = witness_clause;
 }
 
 std::vector<std::vector<int>> BDDNode::get_unsat_clauses(void) const {

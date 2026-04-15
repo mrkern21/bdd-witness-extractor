@@ -17,15 +17,15 @@ class BDDNode {
         bool has_infeasible_parent;
 
     public:
-        BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses, NodeStatus status);
+        BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses, NodeStatus status, std::vector<int> witness_clause);
         ~BDDNode();
         
         void set_low(BDDNode* node);
         void set_high(BDDNode* node);
         void set_parent(BDDNode* node);
         void set_status(NodeStatus status);
-        void set_witness_clause(std::vector<int> clause);
         void set_infeasible_parent(bool value);
+        void set_witness_clause(std::vector<int> witness_clause);
 
         std::vector<std::vector<int>> get_unsat_clauses(void) const;
         std::vector<int> get_witness_clause(void) const;

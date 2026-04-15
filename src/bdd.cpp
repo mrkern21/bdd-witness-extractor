@@ -10,7 +10,18 @@ BDD::~BDD() {
 }
 
 std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
-    std::vector<std::vector<int>> result = {};
+    std::vector<std::vector<int>> result;
+    for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){
+        for(BDDNode* node : layers[current_layer]){
+            if(node->get_status() == NodeStatus::INFEASIBLE && !node->get_has_infeasible_parent()){
+                std::vector<int> witness_clause = node->get_witness_clause();
+                result.push_back(witness_clause);
+                #ifdef DEBUG
+                    std::cerr << "witness clause: " << clause_to_string(witness_clause) << std::endl;
+                #endif
+            }
+        }
+    }
     return result;
 }
 
@@ -44,6 +55,10 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
     result += "layer: " + std::to_string(node->get_layer()) + ", ";
     result += "state: " + node->get_state() + ", ";
     result += "status: " + status_to_string(status) + " ";
+
+    if(!node->get_witness_clause().empty()){
+        result += "witness_clause: " + clause_to_string(node->get_witness_clause()) + " ";
+    }
 
     result += "\n";
 
