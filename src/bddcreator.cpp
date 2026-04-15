@@ -267,13 +267,13 @@ std::vector<int> BDDCreator::apply_resolution(const std::vector<int>& low_witnes
     std::unordered_set<int> tmp;
 
     for(int lit : low_witness){
-        if(!(std::abs(lit) == var)){
+        if(std::abs(lit) != var){
             tmp.insert(lit);
         }
     }
 
     for(int lit : high_witness){
-        if(!(std::abs(lit) == var)){
+        if(std::abs(lit) != var){
             tmp.insert(lit);
         }
     }
