@@ -35,9 +35,6 @@ BDDNode* BDDCreator::top_down_construction(void){
     }
     BDDNode* root = new BDDNode(current_var, current_layer, this->clauses, root_status, empty_witness_clause);
 
-    //set has_infeasible_parent in root to true in case the root should really become infeasible sometime
-    root->set_infeasible_parent(true);
-
     layers[current_layer].push_back(root);
     state_table[current_layer][state_to_key(this->clauses)] = root;
 
