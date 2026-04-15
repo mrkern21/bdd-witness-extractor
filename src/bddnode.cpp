@@ -27,6 +27,10 @@ void BDDNode::set_status(NodeStatus status){
     this->status = status;
 }
 
+void BDDNode::set_infeasible_parent(bool value){
+    this->has_infeasible_parent = value;
+}
+
 std::vector<std::vector<int>> BDDNode::get_unsat_clauses(void) const {
     return this->unsat_clauses;
 }
@@ -70,4 +74,8 @@ std::string BDDNode::get_state(void) const {
     result += "}";
 
     return result;
+}
+
+bool BDDNode::get_has_infeasible_parent(void) const {
+    return this->has_infeasible_parent;
 }

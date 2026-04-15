@@ -91,7 +91,7 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
         {
             int current_var = std::abs(literal);
 
-            if(var_to_layer[current_var] >= current_layer){
+            if(variable_below_layer(current_var, current_layer)){
                 has_unassigned_literal = true;
             }
             
