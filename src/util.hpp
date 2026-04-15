@@ -4,9 +4,6 @@
 #include <unordered_map>
 #include <vector>
 
-//using forward declaration
-class BDDNode;
-
 enum class NodeStatus {
     DEFAULT,
     SAT,

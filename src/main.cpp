@@ -51,7 +51,13 @@ int main(int argc, char* argv[]){
     const char* path = "./test/kell_example.cnf";
     int num_of_vars;
 
-    const char* read = solver.read_dimacs(path, num_of_vars);
+    const char* msg = solver.read_dimacs(path, num_of_vars);
+
+    if(msg != 0){
+        std::cerr << msg << std::endl;
+        return 1;
+    }
+
     bool res = solver.traverse_clauses(collector);
     
     if(!res){
