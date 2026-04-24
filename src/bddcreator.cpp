@@ -156,6 +156,9 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
                 result.status = NodeStatus::UNSAT;
                 if(result.witness_clause.empty()){
                     result.witness_clause = clause;
+                }else if (result.witness_clause.size() > clause.size()){
+                    //choose shortest clause as witness clause for UNSAT node
+                    result.witness_clause = clause;
                 }
             }
             result.state.push_back(clause);
@@ -172,26 +175,6 @@ NextState BDDCreator::compute_next_state(int var, bool value, BDDNode* current_n
     if(result.state.empty()){
         result.status = NodeStatus::SAT;
         return result;
-    }
-
-    //check if node is infeasible
-
-    //I think this is a redundant check at this point
-
-    for(std::vector<int>& clause : result.state){
-        bool has_var_below_layer = false;
-
-        for(const int lit : clause) {
-            if(variable_below_layer(std::abs(lit), current_layer)){
-                has_var_below_layer = true;
-                break;
-            }
-        }
-
-        if(!has_var_below_layer){
-            result.status = NodeStatus::INFEASIBLE;
-            return result;
-        }
     }
 
     return result;

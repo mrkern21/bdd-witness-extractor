@@ -1,6 +1,7 @@
 #include "internal.hpp"
 #include "bddcreator.hpp"
 #include "clausecollector.hpp"
+#include "simple_varorder.hpp"
 #include "bdd.hpp"
 
 int main(int argc, char* argv[]){
@@ -29,15 +30,19 @@ int main(int argc, char* argv[]){
 
     std::vector<std::vector<int>> clauses = collector.retrieve_clauses();
 
+    clauses.resize(30);
+
     std::cout << "clauses: " << clauses.size() << std::endl;
 
-    BDDCreator creator(clauses, other_order);
+
+    BDDCreator creator(clauses, test_var_order);
 
     BDD created_bdd = creator.create_bdd();
 
     std::cout << created_bdd.to_string() << std::endl;
 
     std::vector<std::vector<int>> witness_clauses = created_bdd.generate_witness_clauses();
+
 
     for(const std::vector<int>& cl : witness_clauses){
         solver.clause(cl);
@@ -48,6 +53,7 @@ int main(int argc, char* argv[]){
     std::vector<std::vector<int>> clauses_check = collector_check.retrieve_clauses();
     std::cout << "number of clauses after witness clauses have been added: " << clauses_check.size() << std::endl;
 
+    /*
     while(solver.solve() == 10){
         
         std::vector<int> blocking_clause;
@@ -62,6 +68,8 @@ int main(int argc, char* argv[]){
         std::cout << "SAT!" << std::endl;
         
     }
+
+    */
 
     return 0;
 }
