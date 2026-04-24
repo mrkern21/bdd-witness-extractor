@@ -6,6 +6,7 @@
 int main(int argc, char* argv[]){
 
     std::vector<int> test_var_order = {1,2,3,4,5};
+    std::vector<int> other_order = {1,5,4,2,3};
     CaDiCaL::Solver solver;
     ClauseCollector collector;
 
@@ -27,14 +28,14 @@ int main(int argc, char* argv[]){
     }
 
     std::vector<std::vector<int>> clauses = collector.retrieve_clauses();
-    
+
     std::cout << "clauses: " << clauses.size() << std::endl;
 
-    BDDCreator creator(clauses, test_var_order);
+    BDDCreator creator(clauses, other_order);
 
     BDD created_bdd = creator.create_bdd();
 
-    //std::cout << created_bdd.to_string() << std::endl;
+    std::cout << created_bdd.to_string() << std::endl;
 
     std::vector<std::vector<int>> witness_clauses = created_bdd.generate_witness_clauses();
 
@@ -59,8 +60,8 @@ int main(int argc, char* argv[]){
         solver.clause(blocking_clause);
         std::cout << std::endl;
         std::cout << "SAT!" << std::endl;
-
+        
     }
-    
+
     return 0;
 }
