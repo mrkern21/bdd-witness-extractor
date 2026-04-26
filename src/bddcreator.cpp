@@ -89,6 +89,10 @@ void BDDCreator::bottom_up_pass(void){
                 BDDNode* high = node->get_high();
 
                 if(low != nullptr && high != nullptr){
+
+                    //if low == high skip the computation as bad stuff could happen here
+                    if(low == high) continue;
+
                     NodeStatus low_status = low->get_status();
                     NodeStatus high_status = high->get_status();
 

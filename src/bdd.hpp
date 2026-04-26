@@ -18,6 +18,7 @@ class BDD {
 
         std::vector<std::vector<int>> generate_witness_clauses(void);
         std::string to_string(void) const;
+        bdd_stats number_of_nodes(void) const;
 };
 
 #endif
