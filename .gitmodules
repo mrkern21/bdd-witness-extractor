@@ -2,3 +2,6 @@
 	path = external/cadical
 	url = https://github.com/arminbiere/cadical
 	ignore = dirty
+[submodule "external/igraph"]
+	path = external/igraph
+	url = https://github.com/igraph/igraph.git
