@@ -98,3 +98,5 @@ coverage/
 bdd_solver
 
 external/igraph-install
+
+test/*.cnf

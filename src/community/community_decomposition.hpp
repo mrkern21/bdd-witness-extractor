@@ -90,4 +90,18 @@ struct CommunityDecomposition {
 CommunityDecomposition decompose_cnf(
     const std::vector<std::vector<int>>& clauses);
 
+// Print a human-readable summary of a CommunityDecomposition to `os`.
+// Reports modularity, totals, unassigned clauses
+void print_stats(
+    const CommunityDecomposition& d,
+    std::ostream& os);
+ 
+// Print one line per clause, listing its index and assigned community id.
+// Format: "  clause <index> -> community <id>"
+// Note: produces one line per clause in the input; on industrial instances
+// this can be very long. Use print_stats for a compact overview instead.
+void print_clause_assignments(
+    const CommunityDecomposition& d,
+    std::ostream& os);
+
 #endif

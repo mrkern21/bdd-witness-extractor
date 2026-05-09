@@ -21,6 +21,7 @@
 // =============================================================================
 
 #include "community_decomposition.hpp"
+#include "../internal.hpp"
 
 namespace {
 
@@ -310,4 +311,45 @@ CommunityDecomposition decompose_cnf(
     igraph_vector_destroy(&weights);
 
     return out;
+}
+
+void print_stats(
+    const CommunityDecomposition& d,
+    std::ostream& os)
+{
+    const std::size_t total_vars    = d.variable_to_community.size();
+    const std::size_t total_clauses = d.clause_to_community.size();
+ 
+    // Count clauses that did not get assigned to any community (only happens
+    // for empty clauses in practice).
+    std::size_t unassigned = 0;
+    for (int c : d.clause_to_community) if (c < 0) ++unassigned;
+ 
+    os << "=== CommunityDecomposition stats ===\n";
+    os << "  modularity Q       : " << d.modularity     << "\n";
+    os << "  communities        : " << d.num_communities << "\n";
+    os << "  variables          : " << total_vars       << "\n";
+    os << "  clauses            : " << total_clauses    << "\n";
+    os << "  unassigned clauses : " << unassigned       << "\n";
+}
+
+
+// =============================================================================
+// print_clause_assignments
+// -----------------------------------------------------------------------------
+// One line per clause: index in the input vector + assigned community id.
+// Unassigned clauses (community id -1) are printed with "unassigned" so the
+// caller can spot empty / malformed clauses.
+// =============================================================================
+void print_clause_assignments(
+    const CommunityDecomposition& d,
+    std::ostream& os)
+{
+    os << "=== clause -> community ===\n";
+    for (std::size_t i = 0; i < d.clause_to_community.size(); ++i) {
+        const int c = d.clause_to_community[i];
+        os << "  clause " << i << " -> ";
+        if (c < 0) os << "unassigned\n";
+        else       os << "community " << c << "\n";
+    }
 }
