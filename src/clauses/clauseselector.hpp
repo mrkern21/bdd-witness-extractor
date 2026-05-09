@@ -1,7 +1,7 @@
 #ifndef __CLAUSESELECTOR_HPP
 #define __CLAUSESELECTOR_HPP
 
-#include "internal.hpp"
+#include "../internal.hpp"
 
 class ClauseSelector {
 

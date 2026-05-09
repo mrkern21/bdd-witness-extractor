@@ -1,7 +1,7 @@
 #ifndef __VARORDER_HPP
 #define __VARORDER_HPP
 
-#include "internal.hpp"
+#include "../internal.hpp"
 
 class VarOrderCreator {
 

@@ -11,6 +11,20 @@ enum class NodeStatus {
     INFEASIBLE
 };
 
+struct NextState {
+    std::vector<std::vector<int>> state;
+    std::vector<int> witness_clause;
+    NodeStatus status;
+};
+
+struct bdd_stats {
+    int num_of_nodes;
+    int num_of_sat_nodes;
+    int num_of_unsat_nodes;
+    int num_of_infeasible_nodes;
+    int num_of_default_nodes;
+};
+
 inline std::string status_to_string(NodeStatus status){
     switch(status){
         case NodeStatus::DEFAULT:{
@@ -50,6 +64,14 @@ inline void print_witness_clauses(std::vector<std::vector<int>>& clauses){
     }
 }
 
+inline void print_bdd_stats(bdd_stats& stats){
+    std::cout << "BDD stats: num_of_nodes: " << stats.num_of_nodes << std::endl
+            << "num_of_default_nodes: " << stats.num_of_default_nodes << std::endl
+            << "num_of_sat_nodes: " << stats.num_of_sat_nodes << std::endl
+            << "num_of_unsat_nodes: " << stats.num_of_unsat_nodes << std::endl
+            <<"num_of_infeasible_nodes: " << stats.num_of_infeasible_nodes << std::endl;
+}
+
 inline void print_sat_result(int result){
     std::cout << "result: ";
     if(result == 10){
@@ -60,19 +82,5 @@ inline void print_sat_result(int result){
         std::cout << "UNKNOWN" << std::endl;
     }
 }
-
-struct NextState {
-    std::vector<std::vector<int>> state;
-    std::vector<int> witness_clause;
-    NodeStatus status;
-};
-
-struct bdd_stats {
-    int num_of_nodes;
-    int num_of_sat_nodes;
-    int num_of_unsat_nodes;
-    int num_of_infeasible_nodes;
-    int num_of_default_nodes;
-};
 
 #endif

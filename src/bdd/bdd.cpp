@@ -1,5 +1,4 @@
 #include "bdd.hpp"
-#include <set>
 
 BDD::BDD(BDDNode* root, std::vector<std::vector<BDDNode*>> layers) : root(root), layers(std::move(layers)) 
 {
@@ -74,7 +73,7 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
 
 }
 
-bdd_stats BDD::number_of_nodes(void) const {
+bdd_stats BDD::get_bdd_stats(void) const {
     bdd_stats stats;
     int num_of_default_nodes = 0, num_of_infeasible_nodes = 0, num_of_sat_nodes = 0, num_of_unsat_nodes = 0;
     for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){

@@ -1,8 +1,8 @@
 #ifndef __BDDNODE_HPP
 #define __BDDNODE_HPP
 
-#include "internal.hpp"
-#include "util.hpp"
+#include "../internal.hpp"
+#include "../util.hpp"
 
 class BDDNode {
 

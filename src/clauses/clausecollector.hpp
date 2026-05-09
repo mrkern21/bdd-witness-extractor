@@ -2,7 +2,7 @@
 #define __CLAUSECOLLECTOR_HPP
 
 
-#include "internal.hpp"
+#include "../internal.hpp"
 
 class ClauseCollector : public CaDiCaL::ClauseIterator{
     private:

@@ -1,10 +1,10 @@
 #ifndef __BDDCREATOR_HPP
 #define __BDDCREATOR_HPP
 
-#include "internal.hpp"
+#include "../internal.hpp"
 #include "bdd.hpp"
 #include "bddnode.hpp"
-#include "util.hpp"
+#include "../util.hpp"
 
 class BDDCreator {
 

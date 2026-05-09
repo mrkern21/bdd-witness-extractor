@@ -1,3 +1,6 @@
+#ifndef __SIMPLE_VARORDER_HPP
+#define __SIMPLE_VARORDER_HPP
+
 #include "varordercreator.hpp"
 #include <unordered_set>
 
@@ -25,3 +28,5 @@ std::vector<int> SimpleVarOrder::create_var_order() {
     }
     return std::vector<int>(set.begin(), set.end());
 }
+
+#endif
