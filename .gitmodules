@@ -5,3 +5,4 @@
 [submodule "external/igraph"]
 	path = external/igraph
 	url = https://github.com/igraph/igraph.git
+	ignore = dirty

@@ -96,3 +96,5 @@ coverage/
 *.prof
 
 bdd_solver
+
+external/igraph-install
