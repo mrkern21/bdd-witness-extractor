@@ -12,8 +12,6 @@ class VIG_Clause_Selector : public ClauseSelector{
         int community_index;
         CommunityDecomposition decomp;
 
-        void init_communities();
-
     public:
         VIG_Clause_Selector(std::vector<std::vector<int>>& clauses);
         std::vector<std::vector<int>> select_clauses() override;
