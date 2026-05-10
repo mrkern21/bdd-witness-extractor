@@ -12,12 +12,24 @@ BDDCreator::BDDCreator(std::vector<std::vector<int>>& clauses,
         int var = varorder[layer];
         var_to_layer[var] = layer;
     }
+    this->num_of_nodes = 0;
+}
+
+BDDCreator::~BDDCreator(){
+    if(!ownership_transferred){
+        for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){
+            for(BDDNode* node : layers[current_layer]){
+                delete node;
+            }
+        }
+    }   
 }
 
 BDD BDDCreator::create_bdd(void)
 {
     BDDNode* root = top_down_construction();
     bottom_up_pass();
+    this->ownership_transferred = true;
     return BDD(root, this->layers);
 }
 
@@ -65,9 +77,16 @@ BDDNode* BDDCreator::top_down_construction(void){
                 }
                 else
                 {
+                    if(this->num_of_nodes > this->MAX_NODES){
+                        throw std::runtime_error("MAX NODES REACHED in construction of BDD!");
+                    }
+
                     BDDNode* new_node = new BDDNode(var_next_layer, next_layer, next_state.state, next_state.status, next_state.witness_clause);
                     layers[next_layer].push_back(new_node);
                     state_table[next_layer][normalized_state_string] = new_node;
+
+                    //increment node count
+                    this->num_of_nodes++;
 
                     if (value) node->set_high(new_node);
                     else node->set_low(new_node);
