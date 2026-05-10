@@ -7,12 +7,42 @@
 #include "clauses/vig_clause_selector.hpp"
 #include "bdd/bdd.hpp"
 
+static bool try_build_and_extract(
+    std::vector<std::vector<int>> &chunk,
+    std::vector<std::vector<int>> &witness_clauses)
+{
+    std::cout << "number of clauses in current chunk: " << chunk.size() << std::endl;
+
+    Kondy_VarOrder var_order_creator(chunk);
+    std::vector<int> var_order = var_order_creator.create_var_order();
+    std::cout << "var order: " << clause_to_string(var_order) << std::endl;
+    std::cout << "number of distinct vars in clauses: " << var_order.size() << std::endl;
+
+    try
+    {
+        BDDCreator creator(chunk, var_order);
+        BDD created_bdd = creator.create_bdd();
+
+        auto inner = created_bdd.generate_witness_clauses();
+        std::cout << "number of obtained witness clauses: " << inner.size() << std::endl;
+        print_witness_clauses(inner);
+
+        witness_clauses.insert(witness_clauses.end(), inner.begin(), inner.end());
+        return true;
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cout << "BDD construction failed: " << e.what() << std::endl;
+        return false;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     CaDiCaL::Solver solver;
     ClauseCollector collector;
 
-    const char *path = "./test/06e46ab0acac57a61638cbb741949a98-complete-500-0.1-1-9876543215001.cnf";
+    const char *path = "./test/sat_second_example.cnf";
     int num_of_vars;
 
     const char *msg = solver.read_dimacs(path, num_of_vars);
@@ -35,6 +65,8 @@ int main(int argc, char *argv[])
 
     std::cout << "clauses: " << clauses.size() << std::endl;
 
+    int clause_counter = 0;
+
     // TODO: think about heuristic for splitting the clauses into subsets
     // different subsets might also produce different results but this is a design decision to be made
     // for current instance try 10 chunks
@@ -47,53 +79,57 @@ int main(int argc, char *argv[])
 
     // IDEA: maybe split into chunks if detected community is too large for BDD construction
 
-    int clause_counter = 0;
+    // SimpleVarOrder var_order_creator(selected_clauses);
+    // std::vector<int> simple_var_order = var_order_creator.create_var_order();
+    // randomly shuffer var order
+    // AVOID SHUFFLE FOR NOW TO PRODUCE DETERMINISTIC RESULTS!!
+    // std::shuffle(simple_var_order.begin(), simple_var_order.end(), rng);
+    // std::mt19937 rng(std::random_device{}());
 
-    // Simple_Clause_Selector selector(clauses, 15, 5);
-    VIG_Clause_Selector selector(clauses);
-
-    while (selector.has_remaining_community())
+    
+    // Fast path: small inputs go straight to BDD construction, no community
+    // detection or splitting. The threshold matches what the BDD builder is
+    // known to handle reliably.
+    if (clauses.size() < 60)
     {
-        std::vector<std::vector<int>> selected_clauses = selector.select_clauses();
-        std::cout << "number of selected clauses: " << selected_clauses.size() << std::endl;
-        clause_counter += static_cast<int>(selected_clauses.size());
+        clause_counter += static_cast<int> (clauses.size());
+        try_build_and_extract(clauses, witness_clauses);
+    }
+    else
+    {
+        // Standard path: community detection, then split each community to fit
+        // the BDD builder's empirical limits, with a retry-after-failure layer.
+        
+        VIG_Clause_Selector selector(clauses);
 
-        // SimpleVarOrder var_order_creator(selected_clauses);
-        // std::vector<int> simple_var_order = var_order_creator.create_var_order();
-
-        // randomly shuffer var order
-        // AVOID SHUFFLE FOR NOW TO PRODUCE DETERMINISTIC RESULTS!!
-        // std::shuffle(simple_var_order.begin(), simple_var_order.end(), rng);
-        // std::mt19937 rng(std::random_device{}());
-
-        // if the selected community is too large, i.e., larger than 300 clauses split the community
-        auto chunks = split_community(selected_clauses);
-
-        for (std::vector<std::vector<int>> &chunk : chunks)
+        while (selector.has_remaining_community())
         {
-            
-            std::cout << "number of clauses in current chunk: " << chunk.size() << std::endl;
-            Kondy_VarOrder var_order_creator(chunk);
-            std::vector<int> var_order = var_order_creator.create_var_order();
+            std::vector<std::vector<int>> selected_clauses = selector.select_clauses();
+            std::cout << "number of selected clauses: " << selected_clauses.size() << std::endl;
+            clause_counter += static_cast<int>(selected_clauses.size());
 
-            std::cout << "var order: " << clause_to_string(var_order) << std::endl;
+            auto chunks = split_community(selected_clauses); // default 300 / 95
+            for (std::vector<std::vector<int>> &chunk : chunks)
+            {
+                if (try_build_and_extract(chunk, witness_clauses))
+                {
+                    continue; // first attempt succeeded, on to the next chunk
+                }
 
-            std::cout << "number of distinct vars in clauses: " << var_order.size() << std::endl;
-
-            BDDCreator creator(chunk, var_order);
-
-            BDD created_bdd = creator.create_bdd();
-
-            bdd_stats stats = created_bdd.get_bdd_stats();
-
-            //print_bdd_stats(stats);
-
-            std::vector<std::vector<int>> inner_witness_clauses = created_bdd.generate_witness_clauses();
-            std::cout << "number of obtained witness clauses: " << inner_witness_clauses.size() << std::endl;
-
-            print_witness_clauses(inner_witness_clauses);
-
-            witness_clauses.insert(witness_clauses.end(), inner_witness_clauses.begin(), inner_witness_clauses.end());
+                // First attempt threw. Split harder and retry each sub-chunk.
+                // Sub-chunks that also fail are simply skipped; we move on
+                // rather than recurse further.
+                std::cout << "first build failed; retrying with stricter split" << std::endl;
+                auto second_split = split_community(chunk, 100, 40);
+                for (std::vector<std::vector<int>> &subchunk : second_split)
+                {
+                    if (!try_build_and_extract(subchunk, witness_clauses))
+                    {
+                        std::cout << "second build also failed; skipping this subchunk"
+                                  << std::endl;
+                    }
+                }
+            }
         }
     }
 
