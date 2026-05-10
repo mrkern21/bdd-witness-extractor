@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
+#include <stdexcept>
 #include "cadical.hpp"
 
 #endif
