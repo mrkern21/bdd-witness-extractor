@@ -71,9 +71,9 @@ std::vector<std::vector<std::vector<int>>> split_community(
     // Base case: community fits in the clause budget. Return as one chunk;
     // do NOT apply the variable cap.
     // -------------------------------------------------------------------------
-    if (community_clauses.size() <= max_clauses) {
-        return { community_clauses };
-    }
+    //if (community_clauses.size() <= max_clauses) {
+    //    return { community_clauses };
+    //}
  
     // -------------------------------------------------------------------------
     // Splitting case: enforce both caps with greedy fill.
