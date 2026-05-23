@@ -5,7 +5,7 @@ LDLIBS := -lcadical -ligraph
 
 SRC_DIR := src
 BUILD_DIR := build
-TARGET := bdd_solver
+TARGET := bdd_witness_extractor
 
 # Recursive wildcard: finds files matching a pattern in $1 and all subdirectories.
 # Used so we don't have to list every subfolder under src/ explicitly.
