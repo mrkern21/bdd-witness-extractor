@@ -1,6 +1,6 @@
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -g -I./src -I./external/cadical/src -I./external/igraph-install/include/igraph
-LDFLAGS := -L./external/cadical/build -L./external/igraph-install/lib
+CXXFLAGS := -std=c++17 -Wall -g -I./src -I./external/cadical/src -I./external/igraph/install/include/igraph
+LDFLAGS := -L./external/cadical/build -L./external/igraph/install/lib
 LDLIBS := -lcadical -ligraph
 
 SRC_DIR := src
