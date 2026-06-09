@@ -1,4 +1,4 @@
-#ifndef __VIG_CLAUSE_SELECTOR__HPP
+#ifndef __VIG_CLAUSE_SELECTOR_HPP
 #define __VIG_CLAUSE_SELECTOR_HPP
 
 #include "../internal.hpp"
