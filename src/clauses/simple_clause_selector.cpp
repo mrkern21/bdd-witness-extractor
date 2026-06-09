@@ -6,6 +6,10 @@ Simple_Clause_Selector::Simple_Clause_Selector(std::vector<std::vector<int>>& cl
     this->clause_length = clause_length;
 }
 
+// Iterates clauses in their original order, collecting only those whose
+// length does not exceed clause_length, and stops once number_of_clauses
+// have been collected. The in-order scan means short leading clauses are
+// preferred; no structural selection is performed.
 std::vector<std::vector<int>> Simple_Clause_Selector::select_clauses()
 {
     std::vector<std::vector<int>> result;

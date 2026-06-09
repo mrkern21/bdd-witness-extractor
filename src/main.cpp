@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
               << (args.mode == Mode::Constructive ? "constructive" : "destructive")
               << "\n";
 
+    // Load the CNF via CaDiCaL's parser, then harvest all clauses through the
+    // ClauseIterator interface. CaDiCaL normalizes the input (e.g. removes
+    // tautologies), so the collected clauses may differ slightly from the raw file.
     const char *path = args.input_path.c_str();
     int num_of_vars;
 
@@ -77,9 +80,19 @@ int main(int argc, char *argv[])
     // std::shuffle(simple_var_order.begin(), simple_var_order.end(), rng);
     // std::mt19937 rng(std::random_device{}());
 
-    // Fast path: small inputs go straight to BDD construction, no community
-    // detection or splitting. The threshold matches what the BDD builder is
-    // known to handle reliably.
+    // Witness-clause extraction: three paths depending on input size and mode.
+    //
+    // Fast path  (<60 clauses): build one BDD over the whole formula directly.
+    //   Community detection on tiny inputs produces poor decompositions and is
+    //   not worth the overhead.
+    //
+    // Destructive path (>=60 clauses): decompose into communities via VIG+Louvain,
+    //   split each community into BDD-sized chunks, and extract witnesses per
+    //   chunk. On first-attempt failure (MAX_NODES exceeded), retry with a
+    //   stricter split (100 clauses / 40 vars); sub-chunks that still fail are
+    //   skipped so one hard community does not block the rest.
+    //
+    // Constructive path: not yet implemented (placeholder else branch).
     if (clauses.size() < 60)
     {
         clause_counter += static_cast<int>(clauses.size());
@@ -124,12 +137,16 @@ int main(int argc, char *argv[])
     }
     else
     {
+        
     }
 
     std::cout << std::endl;
     std::cout << "number of total witness clauses: " << witness_clauses.size() << std::endl;
     std::cout << "number of inspected clauses: " << clause_counter << std::endl;
 
+    // Derive the output path by inserting ".augmented" before the last
+    // extension (e.g. "foo.cnf" -> "foo.augmented.cnf"). If there is no
+    // extension, the suffix is appended directly.
     std::string output_path = args.input_path;
     const auto dot = output_path.find_last_of('.');
     if (dot != std::string::npos)

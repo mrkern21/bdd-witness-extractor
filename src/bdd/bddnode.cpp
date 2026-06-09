@@ -8,6 +8,8 @@ BDDNode::BDDNode(int var, int layer, std::vector<std::vector<int>> unsat_clauses
     this->has_infeasible_parent = false;
 }
 
+// DEBUG build emits a trace line on every deletion, useful for catching
+// double-frees or use-after-free during BDD teardown.
 BDDNode::~BDDNode(){
     #ifdef DEBUG
         std::cerr << "Deleting node " << this
@@ -64,6 +66,8 @@ NodeStatus BDDNode::get_status(void) const {
     return this->status;
 }
 
+// Serializes unsat_clauses to "{[l1 l2][l3 l4]...}" for debug output in
+// BDD::to_string(); not used as a hash key (state_to_key in BDDCreator is).
 std::string BDDNode::get_state(void) const {
     std::string result;
 

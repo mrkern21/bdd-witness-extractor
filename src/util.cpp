@@ -3,6 +3,7 @@
 #include "./bdd/bddcreator.hpp"
 #include "./varorder/kondylidou_var_order.hpp"
 
+// Prints the node-count breakdown returned by BDD::get_bdd_stats() to stdout.
 void print_bdd_stats(BDD &bdd)
 {
     bdd_stats stats = bdd.get_bdd_stats();
@@ -13,6 +14,7 @@ void print_bdd_stats(BDD &bdd)
               << "num_of_infeasible_nodes: " << stats.num_of_infeasible_nodes << std::endl;
 }
 
+// Formats a clause as "[l1 l2 ...]" for debug output and log messages.
 std::string clause_to_string(std::vector<int>& clause){
     std::string result = "[";
 
@@ -26,6 +28,7 @@ std::string clause_to_string(std::vector<int>& clause){
     return result;
 }
 
+// Maps the NodeStatus enum to its string representation for debug output.
 std::string status_to_string(NodeStatus status){
     switch(status){
         case NodeStatus::DEFAULT:{
@@ -46,6 +49,7 @@ std::string status_to_string(NodeStatus status){
     }
 }
 
+// Interprets CaDiCaL's result code: 10 = SAT, 20 = UNSAT, anything else = UNKNOWN.
 void print_sat_result(int result){
     std::cout << "result: ";
     if(result == 10){
@@ -57,6 +61,7 @@ void print_sat_result(int result){
     }
 }
 
+// Prints each witness clause to stdout using clause_to_string format.
 void print_witness_clauses(std::vector<std::vector<int>>& clauses){
     for(std::vector<int>& clause : clauses){
         std::cout << clause_to_string(clause) << std::endl;
@@ -64,6 +69,11 @@ void print_witness_clauses(std::vector<std::vector<int>>& clauses){
 }
 
 
+// Splits a community's clause set into chunks that each fit within max_clauses
+// and max_vars using greedy fill. A new chunk is opened whenever the next
+// clause would violate either cap. A single clause that alone exceeds a cap is
+// emitted as its own chunk rather than stalling indefinitely — the BDD builder
+// will then throw if it cannot handle it.
 std::vector<std::vector<std::vector<int>>> split_community(
     const std::vector<std::vector<int>>& community_clauses,
     std::size_t max_clauses,
@@ -134,6 +144,10 @@ std::vector<std::vector<std::vector<int>>> split_community(
     return chunks;
 }
 
+// Runs the full per-chunk pipeline: Kondylidou variable ordering → BDD
+// construction → witness clause extraction. Appends any produced witness
+// clauses to the shared output vector. Returns false (and does not append)
+// if BDD construction exceeds MAX_NODES; the caller decides how to retry.
 bool try_build_and_extract(
     std::vector<std::vector<int>> &chunk,
     std::vector<std::vector<int>> &witness_clauses,
@@ -165,6 +179,9 @@ bool try_build_and_extract(
     }
 }
 
+// Parses -i <path>, -n <max_nodes>, and -m <constructive|destructive> from
+// argv. Throws std::runtime_error with a descriptive message on any invalid
+// or missing argument so main() can print usage and exit cleanly.
 ProgramArgs parse_args(int argc, char** argv) {
     ProgramArgs args;
 

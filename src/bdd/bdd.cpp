@@ -1,9 +1,11 @@
 #include "bdd.hpp"
 
-BDD::BDD(BDDNode* root, std::vector<std::vector<BDDNode*>> layers) : root(root), layers(std::move(layers)) 
+// Ownership of all BDDNode heap allocations is transferred here from BDDCreator.
+BDD::BDD(BDDNode* root, std::vector<std::vector<BDDNode*>> layers) : root(root), layers(std::move(layers))
 {
 }
 
+// Deletes every node layer by layer; the layers vector is the sole ownership record.
 BDD::~BDD() {
     for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){
         for(BDDNode* node : layers[current_layer]){
@@ -12,6 +14,13 @@ BDD::~BDD() {
     }
 }
 
+// Collects one witness clause per top-level INFEASIBLE subtree.
+// Only nodes without an infeasible parent are collected: nodes with an
+// infeasible parent have already been subsumed by an ancestor's witness clause,
+// so including them would produce redundant clauses.
+// Deduplication via std::set is required because shared (merged) nodes can
+// be reached as a child of multiple parents, potentially adding the same
+// witness clause more than once.
 std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
     std::vector<std::vector<int>> result;
     for(size_t current_layer = 0; current_layer < layers.size(); current_layer++){
@@ -29,6 +38,7 @@ std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
     return result;
 }
 
+// Produces a human-readable dump of the entire DAG for debugging.
 std::string BDD::to_string(void) const {
     std::string result;
     std::unordered_set<const BDDNode*> visited;
@@ -40,6 +50,11 @@ std::string BDD::to_string(void) const {
     return result;
 }
 
+// Pre-order DAG traversal; the visited set guards against revisiting shared
+// nodes (the BDD is a DAG, not a tree, so a node can be the child of multiple
+// parents after state-merging in BDDCreator).
+// var is printed as "none" for terminal nodes (SAT/UNSAT) and for nodes whose
+// var field was set to -1 at the last layer boundary.
 void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unordered_set<const BDDNode*>& visited) const {
 
     if(node == nullptr) return;
@@ -73,6 +88,9 @@ void BDD::traverse_pre_order(const BDDNode* node, std::string& result, std::unor
 
 }
 
+// Iterates the full layers vector (authoritative node list) rather than
+// traversing the DAG, so every node is counted exactly once regardless of
+// how many parents point to it.
 bdd_stats BDD::get_bdd_stats(void) const {
     bdd_stats stats;
     int num_of_default_nodes = 0, num_of_infeasible_nodes = 0, num_of_sat_nodes = 0, num_of_unsat_nodes = 0;
