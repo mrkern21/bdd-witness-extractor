@@ -11,7 +11,7 @@
 
 #include "../internal.hpp"
 #include "clauseselector.hpp"
-#include "../community/community_decomposition.hpp"
+#include "../community_decomposition/community_decomposition.hpp"
 
 class VIG_Clause_Selector : public ClauseSelector{
 
