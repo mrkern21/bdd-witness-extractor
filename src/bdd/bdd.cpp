@@ -18,6 +18,9 @@ BDD::~BDD() {
 // Only nodes without an infeasible parent are collected: nodes with an
 // infeasible parent have already been subsumed by an ancestor's witness clause,
 // so including them would produce redundant clauses.
+// Nodes whose resolution produced a tautological resolvent have an empty
+// witness clause; these are skipped to avoid emitting an empty clause into
+// the CNF (which DIMACS parsers interpret as immediately UNSAT).
 // Deduplication via std::set is required because shared (merged) nodes can
 // be reached as a child of multiple parents, potentially adding the same
 // witness clause more than once.
@@ -27,7 +30,9 @@ std::vector<std::vector<int>> BDD::generate_witness_clauses(void) {
         for(BDDNode* node : layers[current_layer]){
             if(node->get_status() == NodeStatus::INFEASIBLE && !node->get_has_infeasible_parent()){
                 std::vector<int> witness_clause = node->get_witness_clause();
-                result.push_back(witness_clause);
+                if(!witness_clause.empty()){
+                    result.push_back(witness_clause);
+                }
             }
         }
     }

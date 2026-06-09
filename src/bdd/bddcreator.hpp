@@ -40,7 +40,7 @@ class BDDCreator {
         std::vector<std::vector<int>> normalize_state(const std::vector<std::vector<int>>& state);
         std::string state_to_key(const std::vector<std::vector<int>>& state);
         bool variable_below_layer(int var, int layer);
-        bool var_in_clause(int var, std::vector<int>& clause);
+        bool var_in_clause(int var, const std::vector<int>& clause);
         std::vector<int> apply_resolution(const std::vector<int>& low_witness, const std::vector<int>& high_witness, int var);
 
     public:

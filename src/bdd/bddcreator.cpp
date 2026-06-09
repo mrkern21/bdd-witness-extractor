@@ -1,4 +1,5 @@
 #include "bddcreator.hpp"
+#include <cassert>
 
 // Pre-builds var_to_layer so compute_next_state can check in O(1) whether a
 // variable still has an unassigned layer below the current position.
@@ -172,10 +173,14 @@ void BDDCreator::bottom_up_pass(void)
                             }
                             else
                             {
-                                // compute new witness clause by applying the resolution rule
-                                // assert that one clause contains x_i and the other ~x_i
+                                // Both witnesses contain current_var; resolve to eliminate it.
+                                // If the resolvent is tautological, apply_resolution returns
+                                // an empty vector and no witness clause is set for this node.
                                 std::vector<int> new_witness = apply_resolution(low_witness, high_witness, current_var);
-                                node->set_witness_clause(new_witness);
+                                if (!new_witness.empty())
+                                {
+                                    node->set_witness_clause(new_witness);
+                                }
                             }
                         }
                     }
@@ -330,7 +335,7 @@ bool BDDCreator::variable_below_layer(int var, int layer)
 // Checks by absolute value whether var (or its negation) appears in clause.
 // Used by bottom_up_pass to decide whether resolution is needed or whether
 // one child's witness clause already lacks the branching variable.
-bool BDDCreator::var_in_clause(int var, std::vector<int> &clause)
+bool BDDCreator::var_in_clause(int var, const std::vector<int> &clause)
 {
     for (int lit : clause)
     {
@@ -344,14 +349,17 @@ bool BDDCreator::var_in_clause(int var, std::vector<int> &clause)
 }
 
 // Applies the resolution rule: merges low_witness and high_witness by
-// eliminating all occurrences of var (positive and negative), then
-// deduplicates and sorts the remaining literals. The result is a clause that
-// is implied by both witnesses and does not contain the branching variable,
-// making it a valid witness for the INFEASIBLE parent node.
+// eliminating all occurrences of var (positive and negative), deduplicates,
+// and returns the remaining literals sorted. std::set provides both
+// deduplication and sorted order in one step, so no separate sort is needed.
+// Returns an empty vector if the resolvent is tautological (i.e. some other
+// variable appears with both polarities in the merged result), signalling to
+// the caller that no useful witness clause can be derived from this resolution.
 std::vector<int> BDDCreator::apply_resolution(const std::vector<int> &low_witness, const std::vector<int> &high_witness, int var)
 {
-    std::vector<int> new_witness;
-    std::unordered_set<int> tmp;
+    assert(var_in_clause(var, low_witness) && var_in_clause(var, high_witness));
+
+    std::set<int> tmp;
 
     for (int lit : low_witness)
     {
@@ -369,13 +377,15 @@ std::vector<int> BDDCreator::apply_resolution(const std::vector<int> &low_witnes
         }
     }
 
-    new_witness.reserve(tmp.size());
-    for (auto it = tmp.begin(); it != tmp.end();)
+    // Tautology check: if any variable appears with both polarities, the
+    // resolvent is always true and useless as a learned clause.
+    for (int lit : tmp)
     {
-        new_witness.push_back(std::move(tmp.extract(it++).value()));
+        if (tmp.count(-lit))
+        {
+            return {};
+        }
     }
 
-    std::sort(new_witness.begin(), new_witness.end());
-
-    return new_witness;
+    return std::vector<int>(tmp.begin(), tmp.end());
 }
