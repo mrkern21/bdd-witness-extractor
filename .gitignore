@@ -98,5 +98,3 @@ coverage/
 bdd_witness_extractor
 
 external/igraph-install
-
-test/*.cnf
