@@ -170,11 +170,13 @@ bool try_build_and_extract(
         print_witness_clauses(inner);
 
         witness_clauses.insert(witness_clauses.end(), inner.begin(), inner.end());
+        std::cout << "\n";
         return true;
     }
     catch (const std::runtime_error &e)
     {
         std::cout << "BDD construction failed: " << e.what() << std::endl;
+        std::cout << "\n";
         return false;
     }
 }

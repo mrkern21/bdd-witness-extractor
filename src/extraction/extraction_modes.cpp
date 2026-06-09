@@ -120,7 +120,7 @@ void destructive_extract(
 {
     auto chunks = split_community(community_clauses, initial_max_clauses, initial_max_vars);
     std::cout << "[destructive] community split into " << chunks.size()
-              << " chunks (caps " << initial_max_clauses << "/" << initial_max_vars << ")\n";
+              << " chunks (caps " << initial_max_clauses << "/" << initial_max_vars << ")\n\n";
 
     for (auto& chunk : chunks) {
         destructive_extract_chunk(chunk, unique_witnesses, build_and_extract,
@@ -153,7 +153,7 @@ void constructive_extract(
             active.emplace(next_id++, make_chunk(std::move(clauses)));
         }
     }
-    std::cout << "[constructive] " << active.size() << " chunks survived baseline build\n";
+    std::cout << "[constructive] " << active.size() << " chunks survived baseline build\n\n";
 
     // Greedy merge loop: repeatedly find and attempt the highest-Jaccard
     // untried pair. failed_pairs prevents retrying combinations that already
@@ -219,5 +219,5 @@ void constructive_extract(
 
     std::cout << "[constructive] merge loop done: "
               << successful_merges << "/" << attempted_merges
-              << " merges succeeded; " << active.size() << " chunks remain\n";
+              << " merges succeeded; " << active.size() << " chunks remain\n\n";
 }

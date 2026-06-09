@@ -37,6 +37,7 @@ void write_augmented_cnf(
                 throw std::runtime_error("malformed CNF header: " + line);
             }
 
+            out << "c " << witnesses.size() << " witness clauses appended\n";
             const std::size_t new_m = static_cast<std::size_t>(m) + witnesses.size();
             out << "p cnf " << n << " " << new_m << "\n";
             header_rewritten = true;

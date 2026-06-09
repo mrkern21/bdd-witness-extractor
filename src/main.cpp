@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
     std::vector<std::vector<int>> clauses = collector.retrieve_clauses();
 
     std::cout << "clauses: " << clauses.size() << std::endl;
+    std::cout << "\n";
 
     int clause_counter = 0;
 
@@ -128,18 +129,21 @@ int main(int argc, char *argv[])
     std::cout << "number of total witness clauses: " << witness_clauses.size() << std::endl;
     std::cout << "number of inspected clauses: " << clause_counter << std::endl;
 
-    // Derive the output path by inserting ".augmented" before the last
-    // extension (e.g. "foo.cnf" -> "foo.augmented.cnf"). If there is no
+    // Derive the output path by inserting a mode suffix before the last
+    // extension (e.g. "foo.cnf" -> "foo.destructive.cnf"). If there is no
     // extension, the suffix is appended directly.
+    const std::string mode_suffix =
+        (args.mode == Mode::Constructive) ? ".constructive" : ".destructive";
+
     std::string output_path = args.input_path;
     const auto dot = output_path.find_last_of('.');
     if (dot != std::string::npos)
     {
-        output_path.insert(dot, ".augmented");
+        output_path.insert(dot, mode_suffix);
     }
     else
     {
-        output_path += ".augmented";
+        output_path += mode_suffix;
     }
 
     try
