@@ -1,3 +1,17 @@
+// BDDNode — a single node in the BDD DAG.
+// Each node branches on one variable (var) at a fixed layer index, with a low
+// child (var = false) and a high child (var = true). unsat_clauses holds the
+// clauses not yet satisfied by the partial assignment that leads to this node;
+// this set is the node's identity for merging equivalent nodes during
+// construction. status is one of DEFAULT, SAT, UNSAT, or INFEASIBLE:
+//   SAT        — all clauses satisfied; this path is a solution.
+//   UNSAT      — at least one clause has no remaining unassigned literal.
+//   INFEASIBLE — both children are UNSAT/INFEASIBLE; witness_clause holds the
+//                resolution-derived clause that proves no extension of this
+//                partial assignment can satisfy the formula.
+// has_infeasible_parent is set during the bottom-up pass to mark that this
+// node's witness clause has already been subsumed by an ancestor, preventing
+// redundant witness collection in BDD::generate_witness_clauses().
 #ifndef __BDDNODE_HPP
 #define __BDDNODE_HPP
 

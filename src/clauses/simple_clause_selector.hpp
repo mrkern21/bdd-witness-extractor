@@ -3,7 +3,11 @@
 
 #include "clauseselector.hpp"
 
-//only select max number_of_clauses clauses up to length clause_length (and observe what happens)
+// Simple_Clause_Selector — baseline clause selection by length and count.
+// Iterates the input clause set in order and selects the first
+// number_of_clauses clauses whose length is at most clause_length. No
+// structural or community analysis is performed; used as a simple baseline to
+// bound BDD construction scope when the full formula is too large.
 class Simple_Clause_Selector : public ClauseSelector {
     private:
         int number_of_clauses;

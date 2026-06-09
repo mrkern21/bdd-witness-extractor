@@ -1,3 +1,19 @@
+// util.hpp — shared types, enums, and utility functions for the BDD pipeline.
+// Defines the core domain types used across all modules:
+//   NodeStatus   — per-node classification (DEFAULT / SAT / UNSAT / INFEASIBLE).
+//   Mode         — program operating mode (Constructive / Destructive).
+//   NextState    — intermediate result of applying one variable assignment in
+//                  BDDCreator: the remaining unsatisfied clauses, their status,
+//                  and the witness clause if the state is already UNSAT.
+//   bdd_stats    — node-count breakdown returned by BDD::get_bdd_stats().
+//   ProgramArgs  — parsed CLI arguments (-i input path, -n max nodes, -m mode).
+// Also declares the top-level pipeline helpers:
+//   try_build_and_extract — builds a BDD for one clause chunk, appends witness
+//                           clauses to the output vector, returns false on
+//                           MAX_NODES overflow.
+//   split_community       — splits a community's clause set into chunks that
+//                           respect the BDD builder's clause and variable caps.
+//   parse_args            — parses argc/argv into ProgramArgs.
 #ifndef __UTIL_HPP
 #define __UTIL_HPP
 
@@ -39,9 +55,9 @@ struct bdd_stats {
 };
 
 struct ProgramArgs {
-    std::string input_path = "instance.cnf";   // <-- change to your preferred default
-    int         max_nodes  = 10'000'000;        // <-- change to your preferred default
-    Mode        mode       = Mode::Destructive; // default per request
+    std::string input_path = "instance.cnf";
+    int         max_nodes  = 10'000'000;
+    Mode        mode       = Mode::Destructive;
 };
 
 std::string status_to_string(NodeStatus status);

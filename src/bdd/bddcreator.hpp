@@ -1,3 +1,15 @@
+// BDDCreator — constructs a BDD from a CNF formula and a variable ordering.
+// Construction is two-phase: top_down_construction() builds the DAG layer by
+// layer, where each node's state is the set of clauses not yet satisfied by the
+// partial assignment leading to it. Nodes with identical normalized states are
+// merged via a per-layer hash table (state_table) to keep the graph compact.
+// A node becomes UNSAT when an unsatisfied clause runs out of unassigned
+// literals, and SAT when all clauses are satisfied.
+// bottom_up_pass() then propagates INFEASIBLE status upward: a node becomes
+// INFEASIBLE when both children are UNSAT or INFEASIBLE, and its witness clause
+// is computed via resolution over the children's witness clauses, eliminating
+// the branching variable. Construction aborts if the node count exceeds
+// MAX_NODES; the caller is expected to catch the resulting runtime_error.
 #ifndef __BDDCREATOR_HPP
 #define __BDDCREATOR_HPP
 
