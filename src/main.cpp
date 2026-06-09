@@ -6,44 +6,35 @@
 #include "clauses/simple_clause_selector.hpp"
 #include "clauses/vig_clause_selector.hpp"
 #include "bdd/bdd.hpp"
-
-static bool try_build_and_extract(
-    std::vector<std::vector<int>> &chunk,
-    std::vector<std::vector<int>> &witness_clauses)
-{
-    std::cout << "number of clauses in current chunk: " << chunk.size() << std::endl;
-
-    Kondy_VarOrder var_order_creator(chunk);
-    std::vector<int> var_order = var_order_creator.create_var_order();
-    std::cout << "var order: " << clause_to_string(var_order) << std::endl;
-    std::cout << "number of distinct vars in clauses: " << var_order.size() << std::endl;
-
-    try
-    {
-        BDDCreator creator(chunk, var_order);
-        BDD created_bdd = creator.create_bdd();
-
-        auto inner = created_bdd.generate_witness_clauses();
-        std::cout << "number of obtained witness clauses: " << inner.size() << std::endl;
-        print_witness_clauses(inner);
-
-        witness_clauses.insert(witness_clauses.end(), inner.begin(), inner.end());
-        return true;
-    }
-    catch (const std::runtime_error &e)
-    {
-        std::cout << "BDD construction failed: " << e.what() << std::endl;
-        return false;
-    }
-}
+#include "cnf_writer/cnf_writer.hpp"
+#include "util.hpp"
 
 int main(int argc, char *argv[])
 {
+    ProgramArgs args;
+    try
+    {
+        args = parse_args(argc, argv);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "argument error: " << e.what() << "\n"
+                  << "usage: " << argv[0]
+                  << " [-i <path>] [-n <max_nodes>] [-m constructive|destructive]\n";
+        return 1;
+    }
+
+    std::cout << "input file : " << args.input_path << "\n";
+    std::cout << "max nodes  : " << args.max_nodes << "\n";
+    std::cout << "mode       : "
+              << (args.mode == Mode::Constructive ? "constructive" : "destructive")
+              << "\n";
+
+    const char *path = args.input_path.c_str();
+    int num_of_vars;
+
     CaDiCaL::Solver solver;
     ClauseCollector collector;
-
-    const char *path = "./test/sat_second_example.cnf";
-    int num_of_vars;
 
     const char *msg = solver.read_dimacs(path, num_of_vars);
 
@@ -86,20 +77,19 @@ int main(int argc, char *argv[])
     // std::shuffle(simple_var_order.begin(), simple_var_order.end(), rng);
     // std::mt19937 rng(std::random_device{}());
 
-    
     // Fast path: small inputs go straight to BDD construction, no community
     // detection or splitting. The threshold matches what the BDD builder is
     // known to handle reliably.
     if (clauses.size() < 60)
     {
-        clause_counter += static_cast<int> (clauses.size());
-        try_build_and_extract(clauses, witness_clauses);
+        clause_counter += static_cast<int>(clauses.size());
+        try_build_and_extract(clauses, witness_clauses, args.max_nodes);
     }
-    else
+    else if (args.mode == Mode::Destructive)
     {
         // Standard path: community detection, then split each community to fit
         // the BDD builder's empirical limits, with a retry-after-failure layer.
-        
+
         VIG_Clause_Selector selector(clauses);
 
         while (selector.has_remaining_community())
@@ -111,7 +101,7 @@ int main(int argc, char *argv[])
             auto chunks = split_community(selected_clauses); // default 300 / 95
             for (std::vector<std::vector<int>> &chunk : chunks)
             {
-                if (try_build_and_extract(chunk, witness_clauses))
+                if (try_build_and_extract(chunk, witness_clauses, args.max_nodes))
                 {
                     continue; // first attempt succeeded, on to the next chunk
                 }
@@ -123,7 +113,7 @@ int main(int argc, char *argv[])
                 auto second_split = split_community(chunk, 100, 40);
                 for (std::vector<std::vector<int>> &subchunk : second_split)
                 {
-                    if (!try_build_and_extract(subchunk, witness_clauses))
+                    if (!try_build_and_extract(subchunk, witness_clauses, args.max_nodes))
                     {
                         std::cout << "second build also failed; skipping this subchunk"
                                   << std::endl;
@@ -132,25 +122,36 @@ int main(int argc, char *argv[])
             }
         }
     }
+    else
+    {
+    }
 
     std::cout << std::endl;
     std::cout << "number of total witness clauses: " << witness_clauses.size() << std::endl;
     std::cout << "number of inspected clauses: " << clause_counter << std::endl;
 
-    for (const std::vector<int> &cl : witness_clauses)
+    std::string output_path = args.input_path;
+    const auto dot = output_path.find_last_of('.');
+    if (dot != std::string::npos)
     {
-        solver.clause(cl);
+        output_path.insert(dot, ".augmented");
+    }
+    else
+    {
+        output_path += ".augmented";
     }
 
-    ClauseCollector collector_check;
-    solver.traverse_clauses(collector_check);
-    std::vector<std::vector<int>> clauses_check = collector_check.retrieve_clauses();
-    std::cout << "number of clauses after witness clauses have been added: " << clauses_check.size() << std::endl;
-
-    // SAT SOLVING
-    int result_solve = solver.solve();
-
-    print_sat_result(result_solve);
+    try
+    {
+        write_augmented_cnf(args.input_path, witness_clauses, output_path);
+        std::cout << "wrote augmented CNF to " << output_path
+                  << " (" << witness_clauses.size() << " witness clauses appended)\n";
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "failed to write augmented CNF: " << e.what() << "\n";
+        return 1;
+    }
 
     return 0;
 }

@@ -17,7 +17,7 @@ class BDDCreator {
         std::vector<std::unordered_map<std::string, BDDNode*>> state_table;
         std::unordered_map<int, int> var_to_layer;
         int num_of_nodes;
-        const int MAX_NODES = 800000;
+        int MAX_NODES = 800000;
         bool ownership_transferred = false;
         
         BDDNode* top_down_construction(void);
@@ -33,7 +33,8 @@ class BDDCreator {
 
     public:
         BDDCreator(std::vector<std::vector<int>>& clauses,
-                   std::vector<int>& varorder);
+                   std::vector<int>& varorder,
+                   int MAX_NODES);
         ~BDDCreator();
         BDD create_bdd(void);
 };

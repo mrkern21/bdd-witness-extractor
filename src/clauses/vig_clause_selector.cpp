@@ -2,7 +2,7 @@
 
 VIG_Clause_Selector::VIG_Clause_Selector(std::vector<std::vector<int>>& clauses) : clauses(clauses)
 {
-    decomp = decompose_cnf(clauses);
+    this->decomp = decompose_cnf(clauses);
     this->community_index = 0;
 }
 

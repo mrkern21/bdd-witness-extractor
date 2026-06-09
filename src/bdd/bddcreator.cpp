@@ -1,7 +1,7 @@
 #include "bddcreator.hpp"
 
 BDDCreator::BDDCreator(std::vector<std::vector<int>> &clauses,
-                       std::vector<int> &varorder) : num_of_layers(static_cast<int>(varorder.size())),
+                       std::vector<int> &varorder, int MAX_NODES) : num_of_layers(static_cast<int>(varorder.size())),
                                                      clauses(clauses),
                                                      varorder(varorder),
                                                      layers(num_of_layers + 1),
@@ -13,6 +13,7 @@ BDDCreator::BDDCreator(std::vector<std::vector<int>> &clauses,
         var_to_layer[var] = layer;
     }
     this->num_of_nodes = 0;
+    this->MAX_NODES = MAX_NODES;
 }
 
 BDDCreator::~BDDCreator()

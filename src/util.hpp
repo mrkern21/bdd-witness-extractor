@@ -5,14 +5,23 @@
 #include <unordered_map>
 #include <vector>
 
-//declare class BDD
+
 class BDD;
+
+class BDDCreator;
+
+class Kondy_VarOrder;
 
 enum class NodeStatus {
     DEFAULT,
     SAT,
     UNSAT,
     INFEASIBLE
+};
+
+enum class Mode {
+    Constructive,
+    Destructive,
 };
 
 struct NextState {
@@ -27,6 +36,12 @@ struct bdd_stats {
     int num_of_unsat_nodes;
     int num_of_infeasible_nodes;
     int num_of_default_nodes;
+};
+
+struct ProgramArgs {
+    std::string input_path = "instance.cnf";   // <-- change to your preferred default
+    int         max_nodes  = 10'000'000;        // <-- change to your preferred default
+    Mode        mode       = Mode::Destructive; // default per request
 };
 
 std::string status_to_string(NodeStatus status);
@@ -44,5 +59,11 @@ std::vector<std::vector<std::vector<int>>> split_community(
     std::size_t max_clauses = 300,
     std::size_t max_vars    = 95);
 
+bool try_build_and_extract(
+    std::vector<std::vector<int>> &chunk,
+    std::vector<std::vector<int>> &witness_clauses,
+    int MAX_NODES);
+
+ProgramArgs parse_args(int argc, char** argv);
 
 #endif

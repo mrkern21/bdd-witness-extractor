@@ -1,5 +1,7 @@
 #include "util.hpp"
 #include "./bdd/bdd.hpp"
+#include "./bdd/bddcreator.hpp"
+#include "./varorder/kondylidou_var_order.hpp"
 
 void print_bdd_stats(BDD &bdd)
 {
@@ -130,4 +132,82 @@ std::vector<std::vector<std::vector<int>>> split_community(
     }
  
     return chunks;
+}
+
+bool try_build_and_extract(
+    std::vector<std::vector<int>> &chunk,
+    std::vector<std::vector<int>> &witness_clauses,
+    int MAX_NODES)
+{
+    std::cout << "number of clauses in current chunk: " << chunk.size() << std::endl;
+
+    Kondy_VarOrder var_order_creator(chunk);
+    std::vector<int> var_order = var_order_creator.create_var_order();
+    std::cout << "var order: " << clause_to_string(var_order) << std::endl;
+    std::cout << "number of distinct vars in clauses: " << var_order.size() << std::endl;
+
+    try
+    {
+        BDDCreator creator(chunk, var_order, MAX_NODES);
+        BDD created_bdd = creator.create_bdd();
+
+        auto inner = created_bdd.generate_witness_clauses();
+        std::cout << "number of obtained witness clauses: " << inner.size() << std::endl;
+        print_witness_clauses(inner);
+
+        witness_clauses.insert(witness_clauses.end(), inner.begin(), inner.end());
+        return true;
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cout << "BDD construction failed: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+ProgramArgs parse_args(int argc, char** argv) {
+    ProgramArgs args;
+
+    for (int i = 1; i < argc; ++i) {
+        const std::string flag = argv[i];
+
+        if (flag == "-i") {
+            if (i + 1 >= argc) {
+                throw std::runtime_error("-i requires a path argument");
+            }
+            args.input_path = argv[++i];
+        }
+        else if (flag == "-n") {
+            if (i + 1 >= argc) {
+                throw std::runtime_error("-n requires an integer argument");
+            }
+            try {
+                args.max_nodes = std::stoi(argv[++i]);
+            } catch (const std::exception&) {
+                throw std::runtime_error("-n argument is not a valid integer: "
+                                         + std::string(argv[i]));
+            }
+            if (args.max_nodes <= 0) {
+                throw std::runtime_error("-n argument must be positive");
+            }
+        }
+        else if (flag == "-m") {
+            if (i + 1 >= argc) {
+                throw std::runtime_error("-m requires a mode argument "
+                                         "(constructive | destructive)");
+            }
+            const std::string value = argv[++i];
+            if      (value == "constructive") args.mode = Mode::Constructive;
+            else if (value == "destructive")  args.mode = Mode::Destructive;
+            else {
+                throw std::runtime_error("-m must be 'constructive' or 'destructive', got: "
+                                         + value);
+            }
+        }
+        else {
+            throw std::runtime_error("unknown argument: " + flag);
+        }
+    }
+
+    return args;
 }

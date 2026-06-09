@@ -95,7 +95,7 @@ temp/
 coverage/
 *.prof
 
-bdd_solver
+bdd_witness_extractor
 
 external/igraph-install
 
