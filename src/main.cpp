@@ -8,6 +8,7 @@
 #include "bdd/bdd.hpp"
 #include "cnf_writer/cnf_writer.hpp"
 #include "util.hpp"
+#include "extraction/extraction_modes.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -61,24 +62,16 @@ int main(int argc, char *argv[])
 
     int clause_counter = 0;
 
-    // TODO: think about heuristic for splitting the clauses into subsets
-    // different subsets might also produce different results but this is a design decision to be made
-    // for current instance try 10 chunks
+    // Shared dedup set; both extraction modes and the fast path insert here.
+    // Witnesses are canonicalized before insertion so literal-order variants
+    // of the same clause are not counted twice.
+    std::set<std::vector<int>> unique_witnesses;
 
-    std::vector<std::vector<int>> witness_clauses;
-
-    // split clauses before creating the BDD
-    // std::vector<std::vector<std::vector<int>>> chunks = split(clauses, 10);
-    // splitiing the instance into chunks before community detection lead to subsets that were too small to produce witness clauses
-
-    // IDEA: maybe split into chunks if detected community is too large for BDD construction
-
-    // SimpleVarOrder var_order_creator(selected_clauses);
-    // std::vector<int> simple_var_order = var_order_creator.create_var_order();
-    // randomly shuffer var order
-    // AVOID SHUFFLE FOR NOW TO PRODUCE DETERMINISTIC RESULTS!!
-    // std::shuffle(simple_var_order.begin(), simple_var_order.end(), rng);
-    // std::mt19937 rng(std::random_device{}());
+    // Build callback shared by both extraction modes.
+    BuildAndExtractFn build_fn = [&](std::vector<std::vector<int>>& chunk,
+                                     std::vector<std::vector<int>>& out) -> bool {
+        return try_build_and_extract(chunk, out, args.max_nodes);
+    };
 
     // Witness-clause extraction: three paths depending on input size and mode.
     //
@@ -87,58 +80,49 @@ int main(int argc, char *argv[])
     //   not worth the overhead.
     //
     // Destructive path (>=60 clauses): decompose into communities via VIG+Louvain,
-    //   split each community into BDD-sized chunks, and extract witnesses per
-    //   chunk. On first-attempt failure (MAX_NODES exceeded), retry with a
-    //   stricter split (100 clauses / 40 vars); sub-chunks that still fail are
-    //   skipped so one hard community does not block the rest.
+    //   then call destructive_extract per community, which recursively halves
+    //   the chunk caps on failure until the chunk fits or hits the lower limit.
     //
-    // Constructive path: not yet implemented (placeholder else branch).
+    // Constructive path (>=60 clauses): same community decomposition, then
+    //   call constructive_extract per community, which fine-splits and then
+    //   greedily merges chunks by Jaccard variable overlap.
     if (clauses.size() < 60)
     {
         clause_counter += static_cast<int>(clauses.size());
-        try_build_and_extract(clauses, witness_clauses, args.max_nodes);
+        std::vector<std::vector<int>> extracted;
+        if (try_build_and_extract(clauses, extracted, args.max_nodes)) {
+            for (auto& w : extracted)
+                unique_witnesses.insert(canonicalize_clause(std::move(w)));
+        }
     }
     else if (args.mode == Mode::Destructive)
     {
-        // Standard path: community detection, then split each community to fit
-        // the BDD builder's empirical limits, with a retry-after-failure layer.
-
         VIG_Clause_Selector selector(clauses);
 
         while (selector.has_remaining_community())
         {
-            std::vector<std::vector<int>> selected_clauses = selector.select_clauses();
-            std::cout << "number of selected clauses: " << selected_clauses.size() << std::endl;
-            clause_counter += static_cast<int>(selected_clauses.size());
-
-            auto chunks = split_community(selected_clauses); // default 300 / 95
-            for (std::vector<std::vector<int>> &chunk : chunks)
-            {
-                if (try_build_and_extract(chunk, witness_clauses, args.max_nodes))
-                {
-                    continue; // first attempt succeeded, on to the next chunk
-                }
-
-                // First attempt threw. Split harder and retry each sub-chunk.
-                // Sub-chunks that also fail are simply skipped; we move on
-                // rather than recurse further.
-                std::cout << "first build failed; retrying with stricter split" << std::endl;
-                auto second_split = split_community(chunk, 100, 40);
-                for (std::vector<std::vector<int>> &subchunk : second_split)
-                {
-                    if (!try_build_and_extract(subchunk, witness_clauses, args.max_nodes))
-                    {
-                        std::cout << "second build also failed; skipping this subchunk"
-                                  << std::endl;
-                    }
-                }
-            }
+            std::vector<std::vector<int>> community = selector.select_clauses();
+            std::cout << "number of selected clauses: " << community.size() << std::endl;
+            clause_counter += static_cast<int>(community.size());
+            destructive_extract(community, unique_witnesses, build_fn);
         }
     }
     else
     {
-        
+        VIG_Clause_Selector selector(clauses);
+
+        while (selector.has_remaining_community())
+        {
+            std::vector<std::vector<int>> community = selector.select_clauses();
+            std::cout << "number of selected clauses: " << community.size() << std::endl;
+            clause_counter += static_cast<int>(community.size());
+            constructive_extract(community, unique_witnesses, build_fn);
+        }
     }
+
+    // Flatten the dedup set into a vector for output and CNF writing.
+    std::vector<std::vector<int>> witness_clauses(unique_witnesses.begin(),
+                                                   unique_witnesses.end());
 
     std::cout << std::endl;
     std::cout << "number of total witness clauses: " << witness_clauses.size() << std::endl;
