@@ -6,7 +6,7 @@ Kondy_VarOrder::Kondy_VarOrder(std::vector<std::vector<int>>& clauses) : clauses
 
 std::vector<int> Kondy_VarOrder::create_var_order()
 {
-        // Per-variable accumulators.
+    // Per-variable accumulators.
     std::unordered_map<int, int>      clause_count;  // # clauses containing v
     std::unordered_map<int, long long> arity_sum;    // sum of those clauses' sizes
  

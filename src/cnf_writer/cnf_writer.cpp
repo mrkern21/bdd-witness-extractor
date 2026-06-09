@@ -10,7 +10,8 @@ void write_augmented_cnf(
     const std::vector<std::vector<int>>& witnesses,
     const std::string& output_path)
 {
-    // ------- open both files up front so we fail before doing any work -------
+    // Open both files before doing any work so we fail fast without writing
+    // a partial output file.
     std::ifstream in(original_path);
     if (!in) {
         throw std::runtime_error("cannot open input CNF: " + original_path);
@@ -20,16 +21,13 @@ void write_augmented_cnf(
         throw std::runtime_error("cannot open output CNF: " + output_path);
     }
 
-    // ------- copy lines through, rewriting the p-cnf header when we see it ---
-    // A DIMACS file may have any number of comment lines ('c ...') before the
-    // header. The header is the first line starting with "p cnf". Some files
-    // have extra whitespace, some have trailing content; we use istringstream
-    // so this all works without surprises.
+    // Copy lines verbatim, rewriting only the "p cnf" header.
+    // A DIMACS file may have any number of 'c' comment lines before the header.
+    // istringstream handles files with extra whitespace or trailing content.
     bool   header_rewritten = false;
     std::string line;
 
     while (std::getline(in, line)) {
-        // Detect the header by its prefix. Anything else we copy verbatim.
         if (!header_rewritten && line.rfind("p cnf", 0) == 0) {
             std::istringstream iss(line);
             std::string p_token, cnf_token;
@@ -52,8 +50,8 @@ void write_augmented_cnf(
             "no 'p cnf' header found in input: " + original_path);
     }
 
-    // ------- append witnesses in DIMACS clause format -----------------------
-    // Each clause: space-separated literals followed by a terminating 0.
+    // Append witness clauses; add the DIMACS terminating 0 per clause here
+    // since inner vectors do not carry it.
     for (const auto& clause : witnesses) {
         for (int lit : clause) {
             out << lit << ' ';
