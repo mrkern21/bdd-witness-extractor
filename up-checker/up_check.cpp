@@ -3,11 +3,6 @@
 // A clause C is UP-implied by F iff adding the negated literals of C as
 // assumptions to F and running unit propagation alone derives a conflict.
 // Usage: up_check <original.cnf> <augmented.cnf>
-// The augmented file's original-clause prefix is byte-identical to
-// <original.cnf> (write_augmented_cnf copies it verbatim), so it is parsed
-// only once, from the original file. The augmented file is scanned just up
-// to its "c witness clauses:" marker and only the clauses after it — the
-// witnesses — are parsed.
 
 #include <cadical.hpp>
 
@@ -105,14 +100,6 @@ int main(int argc, char** argv) {
     std::size_t not_up_implied = 0;
 
     if (num_witnesses > 0) {
-        // For each witness, assume the negation of every literal and cap
-        // decisions at 0 so solve() can only run initial unit propagation from
-        // those assumptions. Both 'assume' and 'limit' are reset by CaDiCaL after
-        // every solve() call, so they must be re-applied on each iteration.
-        // 20 (UNSAT) means UP alone derived a conflict, i.e. the witness is
-        // UP-implied / trivial. Anything else (10 SAT, 0 limit hit) means UP
-        // could not refute the negated witness, so it carries information
-        // beyond UP.
         for (std::size_t i = 0; i < num_witnesses; ++i) {
             const auto& witness = witnesses[i];
 
