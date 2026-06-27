@@ -14,6 +14,8 @@ The tool uses [CaDiCaL](https://github.com/arminbiere/cadical) to parse and pre-
 4. [Building the Extractor](#4-building-the-extractor)
 5. [Usage](#5-usage)
 6. [Output](#6-output)
+7. [Verification](#7-verification)
+8. [UP-Checker](#8-up-checker)
 
 ---
 
@@ -177,3 +179,61 @@ The output file is a valid DIMACS CNF with:
 - The witness clauses appended at the end in standard DIMACS format.
 
 The augmented file can be passed directly to any DIMACS-compatible SAT solver.
+
+---
+
+## 7. Verification
+
+`verification/verify_witnesses.cpp` checks the correctness of an augmented CNF produced by `bdd_witness_extractor` against its original instance.
+
+Build it from the repository root:
+
+```sh
+cd verification
+make
+cd ..
+```
+
+This produces the binary `verify_witnesses` in the repository root.
+
+Usage:
+
+```
+./verify_witnesses <original.cnf> <augmented.cnf> <sat|unsat>
+```
+
+The verifier reads the witness clauses as everything in `<augmented.cnf>` that comes after the original instance's clauses, then checks them according to the expected result of the original formula:
+
+- **`sat`** — solves the augmented CNF with CaDiCaL and confirms the resulting model also satisfies every clause of the original instance.
+- **`unsat`** — for each witness clause `w`, confirms `original ⊨ w` by checking that `original ∧ ¬w` is UNSAT, i.e. that the witness clause is a genuine logical consequence of the original formula and not a spurious addition.
+
+Exit code is `0` if all checks pass, `1` if at least one check fails, and `2` on a usage or parse error.
+
+---
+
+## 8. UP-Checker
+
+`up-checker/up_check.cpp` measures how many of the witness clauses appended by `bdd_witness_extractor` are "trivial," i.e. already derivable from the original formula by unit propagation (UP) alone, as opposed to clauses that encode genuinely new information.
+
+Build it from the repository root:
+
+```sh
+cd up-checker
+make
+cd ..
+```
+
+This produces the binary `up_check` in the repository root.
+
+Usage:
+
+```
+./up_check <original.cnf> <augmented.cnf>
+```
+
+For each witness clause `w` in `<augmented.cnf>`, `up_check` assumes the negated literals of `w` against the original formula and runs CaDiCaL with all decisions disabled (`decisions` limit `0`), so only unit propagation can close the search:
+
+- If propagation alone derives a conflict, `w` is **UP-implied (trivial)** — it adds no information beyond what propagation already gives.
+- Otherwise, `w` is **not UP-implied (useful)** — it encodes a non-trivial fact about the formula.
+
+The tool reports the count of UP-implied vs. not-UP-implied witness clauses and the resulting "useful fraction," followed by a machine-readable `SUMMARY,...` line for scripting.
