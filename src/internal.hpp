@@ -13,6 +13,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include <stdexcept>
-#include "cadical.hpp"
+#include <cadical.hpp>
 
 #endif
