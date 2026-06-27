@@ -53,6 +53,7 @@ void write_augmented_cnf(
 
     // Append witness clauses; add the DIMACS terminating 0 per clause here
     // since inner vectors do not carry it.
+    out << "c witness clauses:\n";
     for (const auto& clause : witnesses) {
         for (int lit : clause) {
             out << lit << ' ';
