@@ -173,6 +173,7 @@ The output file is a valid DIMACS CNF with:
 - The original header rewritten to reflect the additional clauses (`p cnf` line).
 - All original clauses copied verbatim.
 - A comment line indicating how many witness clauses were appended (e.g. `c 42 witness clauses appended`).
+- A `c witness clauses:` marker line preceding the appended clauses.
 - The witness clauses appended at the end in standard DIMACS format.
 
 The augmented file can be passed directly to any DIMACS-compatible SAT solver.
