@@ -93,19 +93,19 @@ igraph is built with CMake and installed into a local prefix so the project can 
 
 ```sh
 cd external/igraph
-mkdir -p install
+mkdir -p igraph_install
 mkdir -p build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../install
+cmake .. -DCMAKE_INSTALL_PREFIX=../igraph_install
 cmake --build .
 cmake --install .
 cd ../../..
 ```
 
-After installation the directory `external/igraph/install/` will contain:
+After installation the directory `external/igraph/igraph_install/` will contain:
 
 ```
-install/
+igraph_install/
   include/igraph/   ← headers referenced by the project
   lib/              ← libigraph.a / libigraph.so
 ```
