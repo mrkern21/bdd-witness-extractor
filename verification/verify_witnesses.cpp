@@ -10,177 +10,83 @@
 //   c k witness clauses appended
 //   <k witness clauses>
 //
-// The original formula is read from <original.cnf> directly; the witness
-// clauses are taken as everything in <augmented.cnf> after the first m
-// clauses, where m is the number of clauses in <original.cnf>.
+// The verifier first checks that <augmented.cnf> really starts with the
+// clauses of <original.cnf>, so the two files belong together. It then solves
+// both files with CaDiCaL and checks that both give the expected result
+// (sat or unsat), i.e. that the witness clauses did not change the solver
+// result.
 //
-// SAT mode:
-//   Runs CaDiCaL on the augmented CNF.  If it finds a model, that model is
-//   checked against every clause of the original instance to confirm it is
-//   a valid model of the original instance.
-//
-// UNSAT mode:
-//   For each witness clause w = (l1 ∨ … ∨ lk), checks that
-//   original ∧ ¬l1 ∧ … ∧ ¬lk  is UNSAT, which is equivalent to
-//   original ⊨ w  (w is a logical consequence of the original formula).
+// Note: this only checks that the solver result is unchanged. It does NOT
+// explicitly check entailment (original ⊨ w for each witness clause w). In
+// the SAT case, a satisfiable augmented formula shows that some model of the
+// original satisfies the witness clauses, not that every model does.
 //
 // Exit codes: 0 = all checks passed, 1 = at least one check failed,
 //             2 = usage / parse error.
 
 #include <cadical.hpp>
-#include <cstdlib>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-struct ParsedCNF {
-    int num_vars = 0;
-    std::vector<std::vector<int>> clauses;
-};
+using Clauses = std::vector<std::vector<int>>;
 
-// Parses a plain DIMACS CNF file into its variable count and clause list.
-static ParsedCNF parse_cnf(const std::string &path)
+// Parses the clauses of a plain DIMACS CNF file. Returns false if the file
+// cannot be opened.
+static bool parse_cnf(const std::string &path, Clauses &clauses)
 {
     std::ifstream in(path);
     if (!in) {
         std::cerr << "error: cannot open " << path << "\n";
-        std::exit(2);
+        return false;
     }
 
-    ParsedCNF result;
     std::string line;
     std::vector<int> cur;
 
     while (std::getline(in, line)) {
-        if (line.empty()) continue;
-        if (line[0] == 'c') continue;
-        if (line[0] == 'p') {
-            std::istringstream ss(line);
-            std::string p, cnf;
-            ss >> p >> cnf >> result.num_vars;
-            continue;
-        }
+        if (line.empty() || line[0] == 'c' || line[0] == 'p') continue;
         std::istringstream ss(line);
         int lit;
         while (ss >> lit) {
             if (lit == 0) {
-                if (!cur.empty()) { result.clauses.push_back(cur); cur.clear(); }
+                if (!cur.empty()) { clauses.push_back(cur); cur.clear(); }
             } else {
                 cur.push_back(lit);
             }
         }
     }
-    if (!cur.empty()) result.clauses.push_back(cur);
+    if (!cur.empty()) clauses.push_back(cur);
 
-    return result;
+    return true;
 }
 
-// Literal l is satisfied by a CaDiCaL model iff val(|l|) has the same sign.
-static bool lit_sat(CaDiCaL::Solver &s, int l)
+// Maps a CaDiCaL result code to a readable string.
+static const char *result_to_string(int res)
 {
-    return s.val(std::abs(l)) == l;
+    if (res == 10) return "SAT";
+    if (res == 20) return "UNSAT";
+    return "UNKNOWN";
 }
 
-// SAT path: solve the augmented CNF, then verify the model clause-by-clause
-// against the original formula.
-static bool verify_sat(const std::vector<std::vector<int>> &original_clauses,
-                        const std::string &aug_path)
+// Reads a DIMACS file into a fresh solver and solves it. Returns CaDiCaL's
+// result code (10 = SAT, 20 = UNSAT, 0 = unknown), or -1 on a read error.
+static int solve_file(const std::string &path)
 {
     CaDiCaL::Solver solver;
     solver.set("verbose", 0);
+    solver.set("quiet", 1);  // suppress read_dimacs's parse banner
 
     int nvars = 0;
-    const char *err = solver.read_dimacs(aug_path.c_str(), nvars);
+    const char *err = solver.read_dimacs(path.c_str(), nvars);
     if (err) {
-        std::cerr << "error reading augmented CNF: " << err << "\n";
-        return false;
+        std::cerr << "error reading " << path << ": " << err << "\n";
+        return -1;
     }
-
-    int res = solver.solve();
-    if (res != 10) {
-        std::cout << "[FAIL] augmented formula is UNSAT — no model to check\n";
-        return false;
-    }
-
-    std::cout << "augmented formula is SAT; verifying model against "
-              << original_clauses.size() << " original clauses...\n";
-
-    int failures = 0;
-    for (std::size_t i = 0; i < original_clauses.size(); ++i) {
-        bool satisfied = false;
-        for (int l : original_clauses[i]) {
-            if (lit_sat(solver, l)) { satisfied = true; break; }
-        }
-        if (!satisfied) {
-            std::cout << "  [FAIL] clause " << (i + 1) << ":";
-            for (int l : original_clauses[i]) std::cout << " " << l;
-            std::cout << " 0\n";
-            ++failures;
-        }
-    }
-
-    if (failures == 0) {
-        std::cout << "[ok] model satisfies all " << original_clauses.size()
-                  << " original clauses\n";
-        return true;
-    }
-    std::cout << "[FAIL] " << failures << " original clause(s) not satisfied\n";
-    return false;
-}
-
-// UNSAT path: for each witness clause w, verify original ⊨ w by checking
-// that original ∧ ¬w is UNSAT.
-static bool verify_unsat(const std::string &orig_path,
-                          const std::vector<std::vector<int>> &witness_clauses)
-{
-    if (witness_clauses.empty()) {
-        std::cout << "no witness clauses found — nothing to verify\n";
-        return true;
-    }
-
-    std::cout << "checking entailment of " << witness_clauses.size()
-              << " witness clauses (original |= w  iff  original ∧ ¬w is UNSAT)...\n";
-
-    int pass = 0, fail = 0;
-    for (std::size_t i = 0; i < witness_clauses.size(); ++i) {
-        const auto &w = witness_clauses[i];
-
-        CaDiCaL::Solver solver;
-        solver.set("verbose", 0);
-        solver.set("quiet", 1);  // suppress read_dimacs's per-call parse banner
-
-        int nvars = 0;
-        const char *err = solver.read_dimacs(orig_path.c_str(), nvars);
-        if (err) {
-            std::cerr << "error reading original CNF: " << err << "\n";
-            return false;
-        }
-
-        // ¬w = ¬l1 ∧ … ∧ ¬lk — add each negated literal as a unit clause.
-        for (int l : w) {
-            solver.add(-l);
-            solver.add(0);
-        }
-
-        int res = solver.solve();
-        if (res == 20) {
-            std::cout << "  [ok]   witness " << (i + 1) << ":";
-            for (int l : w) std::cout << " " << l;
-            std::cout << " 0\n";
-            ++pass;
-        } else {
-            std::cout << "  [FAIL] witness " << (i + 1) << ":";
-            for (int l : w) std::cout << " " << l;
-            std::cout << " 0  (original ∧ ¬w is SAT — not entailed)\n";
-            ++fail;
-        }
-    }
-
-    std::cout << "\n" << pass << "/" << witness_clauses.size()
-              << " witness clauses entailed by the original formula\n";
-    return fail == 0;
+    return solver.solve();
 }
 
 int main(int argc, char *argv[])
@@ -199,25 +105,38 @@ int main(int argc, char *argv[])
         std::cerr << "error: mode must be 'sat' or 'unsat'\n";
         return 2;
     }
+    const int expected = (mode == "sat") ? 10 : 20;
 
-    ParsedCNF orig = parse_cnf(orig_path);
-    ParsedCNF aug  = parse_cnf(aug_path);
+    // The augmented file must start with exactly the original clauses;
+    // everything after them is a witness clause.
+    Clauses orig, aug;
+    if (!parse_cnf(orig_path, orig) || !parse_cnf(aug_path, aug)) return 2;
 
-    if (aug.clauses.size() < orig.clauses.size()) {
-        std::cerr << "error: augmented CNF has fewer clauses than original CNF\n";
+    if (aug.size() < orig.size()
+        || !std::equal(orig.begin(), orig.end(), aug.begin())) {
+        std::cerr << "error: augmented CNF does not start with the clauses "
+                     "of the original CNF\n";
         return 2;
     }
 
-    std::vector<std::vector<int>> witness_clauses(
-        aug.clauses.begin() + static_cast<long>(orig.clauses.size()),
-        aug.clauses.end());
+    std::cout << "original clauses : " << orig.size() << "\n";
+    std::cout << "witness clauses  : " << aug.size() - orig.size() << "\n\n";
 
-    std::cout << "original clauses : " << orig.clauses.size() << "\n";
-    std::cout << "witness clauses  : " << witness_clauses.size()  << "\n\n";
+    const int orig_res = solve_file(orig_path);
+    if (orig_res < 0) return 2;
+    std::cout << "original  : " << result_to_string(orig_res) << "\n";
 
-    bool ok = (mode == "sat")
-        ? verify_sat(orig.clauses, aug_path)
-        : verify_unsat(orig_path, witness_clauses);
+    const int aug_res = solve_file(aug_path);
+    if (aug_res < 0) return 2;
+    std::cout << "augmented : " << result_to_string(aug_res) << "\n\n";
 
-    return ok ? 0 : 1;
+    if (orig_res != expected || aug_res != expected) {
+        std::cout << "[FAIL] expected both to be " << result_to_string(expected)
+                  << "\n";
+        return 1;
+    }
+
+    std::cout << "[ok] original and augmented formula are both "
+              << result_to_string(expected) << "\n";
+    return 0;
 }

@@ -186,6 +186,8 @@ The augmented file can be passed directly to any DIMACS-compatible SAT solver.
 
 `verification/verify_witnesses.cpp` checks the correctness of an augmented CNF produced by `bdd_witness_extractor` against its original instance.
 
+> **Note:** The verifier is only a sanity check that the augmented CNF does not change the solver result. It is not part of the thesis evaluation itself: the main goal of this thesis is to show the impact of the witness clauses on the SAT solver (see `scripts/run_cadical.py`, which compares CaDiCaL's runtime and statistics on the original and augmented instances).
+
 Build it from the repository root:
 
 ```sh
@@ -202,10 +204,9 @@ Usage:
 ./verify_witnesses <original.cnf> <augmented.cnf> <sat|unsat>
 ```
 
-The verifier reads the witness clauses as everything in `<augmented.cnf>` that comes after the original instance's clauses, then checks them according to the expected result of the original formula:
+The verifier first checks that `<augmented.cnf>` starts with exactly the clauses of `<original.cnf>` (everything after them is a witness clause). It then solves both files with CaDiCaL and confirms that both give the expected result (`sat` or `unsat`), i.e. that the witness clauses did not change the solver result.
 
-- **`sat`** — solves the augmented CNF with CaDiCaL and confirms the resulting model also satisfies every clause of the original instance.
-- **`unsat`** — for each witness clause `w`, confirms `original ⊨ w` by checking that `original ∧ ¬w` is UNSAT, i.e. that the witness clause is a genuine logical consequence of the original formula and not a spurious addition.
+Note that this does not explicitly check entailment (`original ⊨ w` for each witness clause `w`): in the SAT case, a satisfiable augmented formula only shows that *some* model of the original satisfies the witness clauses, not that every model does.
 
 Exit code is `0` if all checks pass, `1` if at least one check fails, and `2` on a usage or parse error.
 
