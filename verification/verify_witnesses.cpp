@@ -11,21 +11,31 @@
 //   <k witness clauses>
 //
 // The verifier first checks that <augmented.cnf> really starts with the
-// clauses of <original.cnf>, so the two files belong together. It then solves
-// both files with CaDiCaL and checks that both give the expected result
-// (sat or unsat), i.e. that the witness clauses did not change the solver
-// result.
+// clauses of <original.cnf>, so the two files belong together. Everything
+// after the original clauses is taken as a witness clause.
 //
-// Note: this only checks that the solver result is unchanged. It does NOT
-// explicitly check entailment (original ⊨ w for each witness clause w). In
-// the SAT case, a satisfiable augmented formula shows that some model of the
-// original satisfies the witness clauses, not that every model does.
+// SAT mode:
+//   Solves the original CNF with CaDiCaL and checks that the model it finds
+//   also satisfies every witness clause. That model is then a model of the
+//   augmented formula too, so the solver result is unchanged (both SAT).
+//   A violated witness clause is definitely not entailed by the original,
+//   since every model of the original would have to satisfy an entailed one.
+//
+// UNSAT mode:
+//   Solves both the original and the augmented CNF with CaDiCaL and checks
+//   that both are UNSAT, i.e. that the witness clauses did not change the
+//   solver result.
+//
+// Note: these are sanity checks that the solver result is unchanged. They do
+// NOT explicitly check entailment (original ⊨ w for each witness clause w).
+// In SAT mode only one model of the original is tested, not every model.
 //
 // Exit codes: 0 = all checks passed, 1 = at least one check failed,
 //             2 = usage / parse error.
 
 #include <cadical.hpp>
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -72,11 +82,10 @@ static const char *result_to_string(int res)
     return "UNKNOWN";
 }
 
-// Reads a DIMACS file into a fresh solver and solves it. Returns CaDiCaL's
+// Reads a DIMACS file into the given solver and solves it. Returns CaDiCaL's
 // result code (10 = SAT, 20 = UNSAT, 0 = unknown), or -1 on a read error.
-static int solve_file(const std::string &path)
+static int solve_file(CaDiCaL::Solver &solver, const std::string &path)
 {
-    CaDiCaL::Solver solver;
     solver.set("verbose", 0);
     solver.set("quiet", 1);  // suppress read_dimacs's parse banner
 
@@ -87,6 +96,74 @@ static int solve_file(const std::string &path)
         return -1;
     }
     return solver.solve();
+}
+
+// A literal is true in the model iff its variable's value has the same sign.
+// (val() of a positive variable index is positive iff the variable is true.)
+static bool lit_true(CaDiCaL::Solver &solver, int lit)
+{
+    return (solver.val(std::abs(lit)) > 0) == (lit > 0);
+}
+
+// SAT path: solve the original CNF and check that its model satisfies every
+// witness clause. Returns an exit code.
+static int verify_sat(const std::string &orig_path, const Clauses &witnesses)
+{
+    CaDiCaL::Solver solver;
+    const int res = solve_file(solver, orig_path);
+    if (res < 0) return 2;
+    std::cout << "original  : " << result_to_string(res) << "\n\n";
+
+    if (res != 10) {
+        std::cout << "[FAIL] expected original to be SAT\n";
+        return 1;
+    }
+
+    int failures = 0;
+    for (std::size_t i = 0; i < witnesses.size(); ++i) {
+        const auto &w = witnesses[i];
+        const bool satisfied = std::any_of(w.begin(), w.end(),
+            [&](int lit) { return lit_true(solver, lit); });
+        if (!satisfied) {
+            std::cout << "  [FAIL] witness " << (i + 1) << ":";
+            for (int lit : w) std::cout << " " << lit;
+            std::cout << " 0  (violated by the model of the original — not entailed)\n";
+            ++failures;
+        }
+    }
+
+    if (failures > 0) {
+        std::cout << "[FAIL] " << failures << "/" << witnesses.size()
+                  << " witness clause(s) violated by the model of the original\n";
+        return 1;
+    }
+
+    std::cout << "[ok] model of the original satisfies all " << witnesses.size()
+              << " witness clauses, so original and augmented formula are both SAT\n";
+    return 0;
+}
+
+// UNSAT path: solve both the original and the augmented CNF and check that
+// both are UNSAT. Returns an exit code.
+static int verify_unsat(const std::string &orig_path, const std::string &aug_path)
+{
+    CaDiCaL::Solver orig_solver;
+    const int orig_res = solve_file(orig_solver, orig_path);
+    if (orig_res < 0) return 2;
+    std::cout << "original  : " << result_to_string(orig_res) << "\n";
+
+    CaDiCaL::Solver aug_solver;
+    const int aug_res = solve_file(aug_solver, aug_path);
+    if (aug_res < 0) return 2;
+    std::cout << "augmented : " << result_to_string(aug_res) << "\n\n";
+
+    if (orig_res != 20 || aug_res != 20) {
+        std::cout << "[FAIL] expected both to be UNSAT\n";
+        return 1;
+    }
+
+    std::cout << "[ok] original and augmented formula are both UNSAT\n";
+    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -105,7 +182,6 @@ int main(int argc, char *argv[])
         std::cerr << "error: mode must be 'sat' or 'unsat'\n";
         return 2;
     }
-    const int expected = (mode == "sat") ? 10 : 20;
 
     // The augmented file must start with exactly the original clauses;
     // everything after them is a witness clause.
@@ -119,24 +195,11 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+    const Clauses witnesses(aug.begin() + static_cast<long>(orig.size()), aug.end());
+
     std::cout << "original clauses : " << orig.size() << "\n";
-    std::cout << "witness clauses  : " << aug.size() - orig.size() << "\n\n";
+    std::cout << "witness clauses  : " << witnesses.size() << "\n\n";
 
-    const int orig_res = solve_file(orig_path);
-    if (orig_res < 0) return 2;
-    std::cout << "original  : " << result_to_string(orig_res) << "\n";
-
-    const int aug_res = solve_file(aug_path);
-    if (aug_res < 0) return 2;
-    std::cout << "augmented : " << result_to_string(aug_res) << "\n\n";
-
-    if (orig_res != expected || aug_res != expected) {
-        std::cout << "[FAIL] expected both to be " << result_to_string(expected)
-                  << "\n";
-        return 1;
-    }
-
-    std::cout << "[ok] original and augmented formula are both "
-              << result_to_string(expected) << "\n";
-    return 0;
+    return (mode == "sat") ? verify_sat(orig_path, witnesses)
+                           : verify_unsat(orig_path, aug_path);
 }

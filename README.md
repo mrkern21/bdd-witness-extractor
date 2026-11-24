@@ -204,9 +204,12 @@ Usage:
 ./verify_witnesses <original.cnf> <augmented.cnf> <sat|unsat>
 ```
 
-The verifier first checks that `<augmented.cnf>` starts with exactly the clauses of `<original.cnf>` (everything after them is a witness clause). It then solves both files with CaDiCaL and confirms that both give the expected result (`sat` or `unsat`), i.e. that the witness clauses did not change the solver result.
+The verifier first checks that `<augmented.cnf>` starts with exactly the clauses of `<original.cnf>`; everything after them is a witness clause. It then checks according to the expected result of the original formula:
 
-Note that this does not explicitly check entailment (`original ⊨ w` for each witness clause `w`): in the SAT case, a satisfiable augmented formula only shows that *some* model of the original satisfies the witness clauses, not that every model does.
+- **`sat`** — solves the original CNF with CaDiCaL and confirms that its model also satisfies every witness clause. That model is then a model of the augmented CNF too, so both are SAT. A violated witness clause is definitely not entailed by the original formula.
+- **`unsat`** — solves both the original and the augmented CNF with CaDiCaL and confirms that both are UNSAT, i.e. that the witness clauses did not change the solver result.
+
+Note that this does not explicitly check entailment (`original ⊨ w` for each witness clause `w`): in the SAT case, only one model of the original is tested, not every model.
 
 Exit code is `0` if all checks pass, `1` if at least one check fails, and `2` on a usage or parse error.
 
