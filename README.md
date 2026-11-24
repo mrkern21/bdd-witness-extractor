@@ -67,7 +67,7 @@ brew install cmake bison flex libxml2 pkg-config
 
 ```sh
 git clone --recurse-submodules <repo-url>
-cd bachelor_thesis_bdd_cadical
+cd bdd-witness-extractor
 ```
 
 If you already cloned without `--recurse-submodules`:
