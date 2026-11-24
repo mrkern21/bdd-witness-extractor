@@ -56,7 +56,7 @@ struct bdd_stats {
 
 struct ProgramArgs {
     std::string input_path = "instance.cnf";
-    int         max_nodes  = 10'000'000;
+    int         max_nodes  = 800'000;
     Mode        mode       = Mode::Destructive;
 };
 
