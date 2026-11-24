@@ -10,7 +10,7 @@
 //                resolution-derived clause that proves no extension of this
 //                partial assignment can satisfy the formula.
 // has_infeasible_parent is set during the bottom-up pass to mark that this
-// node's witness clause has already been ruled out by an ancestor, preventing
+// node is already ruled out by an ancestor's witness clause, preventing
 // redundant witness collection in BDD::generate_witness_clauses().
 #ifndef __BDDNODE_HPP
 #define __BDDNODE_HPP

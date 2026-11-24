@@ -8,7 +8,7 @@
 //   c k witness clauses appended
 //   p cnf <n> <m+k>
 //   <original m clauses>
-//   c witness clauses;
+//   c witness clauses:
 //   <k witness clauses>
 //
 // The verifier first checks that <augmented.cnf> really starts with the
