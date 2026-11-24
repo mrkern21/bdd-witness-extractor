@@ -1,6 +1,7 @@
 // BDD — Binary Decision Diagram built over a set of CNF clauses using a fixed
-// variable ordering. Nodes are organized in layers (one per variable); each
-// internal node branches on its variable (low = false, high = true) and is
+// variable ordering. Nodes are organized in layers (one per variable,
+// plus a final layer for the nodes reached after the last variable);
+// Each internal node branches on its variable (low = false, high = true) and is
 // classified as DEFAULT, SAT, UNSAT, or INFEASIBLE during construction.
 // The primary output is generate_witness_clauses(), which collects witness
 // clauses from INFEASIBLE nodes that have no infeasible parent. These clauses

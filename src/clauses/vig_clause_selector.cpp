@@ -1,7 +1,6 @@
 #include "vig_clause_selector.hpp"
 
-// Runs the full VIG+Louvain decomposition eagerly at construction time so
-// that repeated select_clauses() calls are cheap (just index lookups).
+// Runs the full VIG+Louvain decomposition eagerly at construction time.
 VIG_Clause_Selector::VIG_Clause_Selector(std::vector<std::vector<int>>& clauses) : clauses(clauses)
 {
     this->decomp = decompose_cnf(clauses);

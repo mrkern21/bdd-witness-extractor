@@ -5,9 +5,10 @@
 // The augmented CNF produced by bdd_witness_extractor contains the full
 // original formula followed by the witness clauses:
 //
+//   c k witness clauses appended
 //   p cnf <n> <m+k>
 //   <original m clauses>
-//   c k witness clauses appended
+//   c witness clauses;
 //   <k witness clauses>
 //
 // The verifier first checks that <augmented.cnf> really starts with the

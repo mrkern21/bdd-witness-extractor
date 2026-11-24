@@ -10,8 +10,6 @@ void write_augmented_cnf(
     const std::vector<std::vector<int>>& witnesses,
     const std::string& output_path)
 {
-    // Open both files before doing any work so we fail fast without writing
-    // a partial output file.
     std::ifstream in(original_path);
     if (!in) {
         throw std::runtime_error("cannot open input CNF: " + original_path);

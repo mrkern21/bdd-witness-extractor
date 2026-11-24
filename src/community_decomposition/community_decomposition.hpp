@@ -6,7 +6,6 @@
 // communities maximising modularity (Ansótegui, Giráldez-Cru, Levy, SAT 2012).
 // Each clause is assigned to the community holding the plurality of its variables;
 // ties are broken by smallest community id for determinism.
-// Unit and empty clauses contribute no VIG edges and may go unassigned (id -1).
 #ifndef __COMMUNITY_DECOMP_HPP
 #define __COMMUNITY_DECOMP_HPP
 

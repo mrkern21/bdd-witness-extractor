@@ -12,7 +12,7 @@
 //                           clauses to the output vector, returns false on
 //                           MAX_NODES overflow.
 //   split_community       — splits a community's clause set into chunks that
-//                           respect the BDD builder's clause and variable caps.
+//                           respect the clause and variable caps.
 //   parse_args            — parses argc/argv into ProgramArgs.
 #ifndef __UTIL_HPP
 #define __UTIL_HPP

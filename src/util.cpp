@@ -72,8 +72,7 @@ void print_witness_clauses(std::vector<std::vector<int>>& clauses){
 // Splits a community's clause set into chunks that each fit within max_clauses
 // and max_vars using greedy fill. A new chunk is opened whenever the next
 // clause would violate either cap. A single clause that alone exceeds a cap is
-// emitted as its own chunk rather than stalling indefinitely — the BDD builder
-// will then throw if it cannot handle it.
+// emitted as its own chunk rather than stalling indefinitely.
 std::vector<std::vector<std::vector<int>>> split_community(
     const std::vector<std::vector<int>>& community_clauses,
     std::size_t max_clauses,

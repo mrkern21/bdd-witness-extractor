@@ -1,4 +1,4 @@
-// decompose_cnf proceeds in six stages:
+// decompose_cnf proceeds in seven stages (0-6):
 //   0. Discover variables and assign compact 0..n-1 indices (igraph requires
 //      consecutive vertex ids; original ids may be sparse).
 //   1. Accumulate VIG edge weights into a hash map keyed by variable pairs.

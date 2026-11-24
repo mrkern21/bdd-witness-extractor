@@ -16,7 +16,7 @@ BDD::~BDD() {
 
 // Collects one witness clause per top-level INFEASIBLE subtree.
 // Only nodes without an infeasible parent are collected: nodes with an
-// infeasible parent have already been subsumed by an ancestor's witness clause,
+// infeasible parent have already been ruled out by an ancestor's witness clause,
 // so including them would produce redundant clauses.
 // Nodes whose resolution produced a tautological resolvent have an empty
 // witness clause; these are skipped to avoid emitting an empty clause into
