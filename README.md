@@ -44,17 +44,17 @@ igraph's build system requires several additional tools. Install them via your p
 
 **Debian / Ubuntu:**
 ```sh
-sudo apt-get install cmake bison flex libxml2-dev pkg-config
+sudo apt-get install cmake bison flex pkg-config
 ```
 
 **Fedora / RHEL:**
 ```sh
-sudo dnf install cmake bison flex libxml2-devel pkgconfig
+sudo dnf install cmake bison flex pkgconfig
 ```
 
 **macOS (Homebrew):**
 ```sh
-brew install cmake bison flex libxml2 pkg-config
+brew install cmake bison flex pkg-config
 ```
 
 > `bison` and `flex` are required to generate igraph's internal parsers. The build will fail with a cryptic error if either is missing.
@@ -96,11 +96,21 @@ cd external/igraph
 mkdir -p igraph_install
 mkdir -p build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../igraph_install
+cmake .. -DCMAKE_INSTALL_PREFIX=../igraph_install \
+  -DIGRAPH_USE_INTERNAL_BLAS=ON \
+  -DIGRAPH_USE_INTERNAL_LAPACK=ON \
+  -DIGRAPH_USE_INTERNAL_ARPACK=ON \
+  -DIGRAPH_USE_INTERNAL_GLPK=ON \
+  -DIGRAPH_USE_INTERNAL_GMP=ON \
+  -DIGRAPH_USE_INTERNAL_PLFIT=ON \
+  -DIGRAPH_GRAPHML_SUPPORT=OFF \
+  -DBUILD_TESTING=OFF
 cmake --build .
 cmake --install .
 cd ../../..
 ```
+
+> These flags make igraph use its bundled dependencies, so `libigraph.a` links on its own on Linux and macOS.
 
 After installation the directory `external/igraph/igraph_install/` will contain:
 
