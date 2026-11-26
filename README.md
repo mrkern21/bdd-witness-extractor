@@ -40,24 +40,20 @@ Both dependencies are included as git submodules under `external/`:
 
 ### igraph build dependencies
 
-igraph's build system requires several additional tools. Install them via your package manager:
+Besides `cmake`, igraph's build system needs `bison` and `flex`:
 
 **Debian / Ubuntu:**
 ```sh
 sudo apt install cmake bison flex
 ```
 
-**Fedora / RHEL:**
+**macOS:**
 ```sh
-sudo dnf install cmake bison flex
+xcode-select --install   # Command Line Tools: clang, make, bison, flex (skip if already installed)
+brew install cmake
 ```
 
-**macOS (Homebrew):**
-```sh
-brew install cmake bison flex
-```
-
-> `bison` and `flex` are required to generate igraph's internal parsers. The build will fail with a cryptic error if either is missing.
+> `bison` and `flex` are required to generate igraph's internal parsers. The build will fail with a cryptic error if either is missing. On macOS, the versions shipped with the Xcode Command Line Tools in `/usr/bin` are sufficient.
 
 ---
 
@@ -66,7 +62,7 @@ brew install cmake bison flex
 ### 3.1 Clone the repository with submodules
 
 ```sh
-git clone --recurse-submodules <repo-url>
+git clone --recurse-submodules https://github.com/mrkern21/bdd-witness-extractor.git
 cd bdd-witness-extractor
 ```
 
@@ -117,7 +113,7 @@ After installation the directory `external/igraph/igraph_install/` will contain:
 ```
 igraph_install/
   include/igraph/   ← headers referenced by the project
-  lib/              ← libigraph.a / libigraph.so
+  lib/              ← libigraph.a
 ```
 
 ---
@@ -149,7 +145,7 @@ make clean
 | Flag | Description | Default |
 |---|---|---|
 | `-i <path>` | Path to the input CNF file in DIMACS format | `instance.cnf` |
-| `-n <max_nodes>` | Maximum number of BDD nodes before a chunk is abandoned | `10000000` |
+| `-n <max_nodes>` | Maximum number of BDD nodes before a chunk is abandoned | `800000` |
 | `-m <mode>` | Extraction mode: `destructive` or `constructive` | `destructive` |
 
 ### Extraction modes
