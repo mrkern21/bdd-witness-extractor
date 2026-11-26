@@ -44,17 +44,17 @@ igraph's build system requires several additional tools. Install them via your p
 
 **Debian / Ubuntu:**
 ```sh
-sudo apt-get install cmake bison flex pkg-config
+sudo apt install cmake bison flex
 ```
 
 **Fedora / RHEL:**
 ```sh
-sudo dnf install cmake bison flex pkgconfig
+sudo dnf install cmake bison flex
 ```
 
 **macOS (Homebrew):**
 ```sh
-brew install cmake bison flex pkg-config
+brew install cmake bison flex
 ```
 
 > `bison` and `flex` are required to generate igraph's internal parsers. The build will fail with a cryptic error if either is missing.
